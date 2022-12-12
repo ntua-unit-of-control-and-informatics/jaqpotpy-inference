@@ -1,2 +1,2 @@
-# jaqpot-inference
-Inference for Jaqpot
+# jaqpotpy-inference
+ Jaqpotpy Inference
