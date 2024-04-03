@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from ..src.handlers.predict import model_post_handler
-from ..src.entities.prediction_request import PredictionRequestPydantic
+from src.handlers.predict import model_post_handler
+from src.entities.prediction_request import PredictionRequestPydantic
 from fastapi.responses import JSONResponse
 
 
