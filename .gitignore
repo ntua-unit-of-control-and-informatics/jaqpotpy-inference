@@ -6,3 +6,5 @@ Scripts/
 Scripts
 pyvenv.cfg
 .idea
+
+venv

@@ -1,3 +1,21 @@
 fastapi==0.88.0
 pydantic==1.10.2
 uvicorn==0.20.0
+
+# local requirements
+# uncomment to run the system locally
+# torch==1.13.0
+# jaqpotpy==1.0.82
+# tqdm==4.64.1
+# skl2onnx==1.13.0
+# onnxruntime==1.13.1
+# matplotlib==3.6.2
+# numpy~=1.26.4
+# networkx~=2.8.8
+# pillow~=10.3.0
+# scipy~=1.13.0
+# torch-scatter
+# torch-sparse
+# torch-cluster
+# torch-spline-conv
+# torch-geometric
