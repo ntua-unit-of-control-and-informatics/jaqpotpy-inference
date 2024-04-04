@@ -1,4 +1,4 @@
 def decode(request):
     dataset = request.dataset
-    dataEntryAll = [item['values']['0'] for item in dataset['dataEntry']]
-    return dataEntryAll
+    data_entry_all = [item['values']['0'] for item in dataset['dataEntry']]
+    return data_entry_all

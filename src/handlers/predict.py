@@ -1,10 +1,11 @@
-from ..entities.prediction_request import PredictionRequestPydantic, PredictionRequest
-from ..helpers import model_decoder, json_to_predreq, doa_calc
+from ..entities.prediction_request import PredictionRequestPydantic
+from ..helpers import model_decoder, json_to_predreq
+
 
 def model_post_handler(request: PredictionRequestPydantic):
     model = model_decoder.decode(request.rawModel[0])
-    dataEntryAll = json_to_predreq.decode(request)
-    _ = model(dataEntryAll)
+    data_entry_all = json_to_predreq.decode(request)
+    _ = model(data_entry_all)
 
     if isinstance(model.prediction[0], list):
         results = {model.Y[i]: [item[i] for item in model.prediction] for i in range(len(model.prediction[0]))}
@@ -16,7 +17,6 @@ def model_post_handler(request: PredictionRequestPydantic):
     else:
         results = {model.Y: [item for item in model.prediction]}
 
-
     if model.doa:
         results['AD'] = model.doa.IN
     else:
@@ -27,6 +27,6 @@ def model_post_handler(request: PredictionRequestPydantic):
     else:
         results['Probabilities'] = [[] for _ in range(len(model.prediction))]
 
-    finalAll = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
+    final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
 
-    return finalAll
+    return final_all
