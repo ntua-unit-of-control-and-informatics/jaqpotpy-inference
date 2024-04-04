@@ -10,3 +10,7 @@ To launch the server locally, use the following command:
 uvicorn main:app --host 0.0.0.0 --port 8002
 ```
 This command initiates the server on port 8002, making the API accessible for local testing and development.
+
+## Docs/Swagger UI
+
+To see the api docs visit http://localhost:8002/docs
