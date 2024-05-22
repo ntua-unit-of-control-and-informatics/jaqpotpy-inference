@@ -1,7 +1,6 @@
 # local requirements
 # uncomment to run the system locally
 torch==1.13.0
-jaqpotpy==/home/alex-arvanitidis-ntua/Projects/ntua/jaqpotpy
 tqdm==4.64.1
 skl2onnx==1.13.0
 onnxruntime==1.13.1
