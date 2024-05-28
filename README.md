@@ -1,6 +1,6 @@
 # Jaqpot-Inference
 
-`jaqpot-inference` serves as a server for the [jaqpotpy](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy) code, exposing it as an API. This package builds upon the [jaqpotpy-inference](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy-inference) Docker image (as you can see on the Dockerfile), offering a ready-to-use API server for making predictions.
+`jaqpot-inference` functions as a server for the [jaqpotpy](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy) code, exposing it as an API. This package builds upon the [jaqpotpy-inference](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy-inference) Docker image (as you can see on the Dockerfile), offering a ready-to-use API server for making predictions.
 
 ## Running the Server Locally
 
