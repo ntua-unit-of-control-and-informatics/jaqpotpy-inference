@@ -15,4 +15,4 @@ class PredictionRequestPydantic(BaseModel):
     dataset: Any
     rawModel: Any
     additionalInfo: Any
-    doaMatrix: Any
+    doaMatrix: Any = None
