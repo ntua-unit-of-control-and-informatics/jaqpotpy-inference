@@ -3,9 +3,13 @@ from ..helpers import model_decoder, json_to_predreq
 
 
 def model_post_handler(request: PredictionRequestPydantic):
-    model = model_decoder.decode(request.rawModel[0])
-    data_entry_all = json_to_predreq.decode(request)
-    _ = model(data_entry_all)
+    model = model_decoder.decode(request.rawModel[0]) 
+    if len(request.dataset['features']) == 1:
+        data_entry_all = json_to_predreq.decode(request)
+        _ = model(data_entry_all)
+    else:
+        Smiles_input, data_entry_all = json_to_predreq.decode_with_external(request)
+        _ = model(Smiles_input, data_entry_all)
 
     if isinstance(model.prediction[0], list):
         results = {model.Y[i]: [item[i] for item in model.prediction] for i in range(len(model.prediction[0]))}
