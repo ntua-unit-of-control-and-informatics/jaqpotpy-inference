@@ -1,15 +1,11 @@
-FROM euclia/jaqpotpy-inference
+FROM python:3.10
 
-WORKDIR /app
+WORKDIR /code
 
-COPY requirements.txt .
+COPY ./requirements.txt /code/requirements.txt
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-# Copy the application code to the working directory
-COPY . .
+COPY ./main.py /code/
 
-EXPOSE 8002
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["fastapi", "run", "main.py", "--port", "80"]
