@@ -3,7 +3,7 @@ from ..helpers import model_decoder, json_to_predreq
 
 
 def model_post_handler(request: PredictionRequestPydantic):
-    model = model_decoder.decode(request.rawModel[0])
+    model = model_decoder.decode(request.model['actualModel'])
     data_entry_all = json_to_predreq.decode(request)
     _ = model(data_entry_all)
 
