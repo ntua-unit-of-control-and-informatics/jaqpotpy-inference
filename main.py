@@ -28,13 +28,13 @@ import jaqpotpy
 
 
 
-# @app.get('/')
-# def hello_world():
-#     return {'Hello': 'World'}
+@app.get('/')
+def hello_world():
+    return {'Hello': 'World'}
 
-# @app.post('/predict/')
-# def predict(req: PredictionRequestPydantic):
-#     return JSONResponse(content = model_post_handler(req))
+@app.post('/predict/')
+def predict(req: PredictionRequestPydantic):
+    return JSONResponse(content = model_post_handler(req))
 
 # ################################################################################
 # ############################ ONLY FOR LOCAL TESTING ############################
