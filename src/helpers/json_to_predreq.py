@@ -1,5 +1,9 @@
 def decode(request):
     dataset = request.dataset
-    data_entries = dataset['input']
-    data_entry_all = [item['values'][0] for item in data_entries]
-    return data_entry_all
+    model = request.model
+
+    keys = [feature['key'] for feature in model['independentFeatures']]
+    transformed_values = [[data[key] for key in keys] for data in dataset['input']]
+
+    # TODO fix to support multiple rows
+    return transformed_values[0]
