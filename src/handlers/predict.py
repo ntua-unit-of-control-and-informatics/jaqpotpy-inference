@@ -11,16 +11,13 @@ def model_post_handler(request: PredictionRequestPydantic):
         probabilities = [None for _ in range(len(prediction))]
 
     results = {}
-    if len(model.dependentFeatures) == 1:
-        key = model.dependentFeatures[0]['key']
-        values = [str(item) for item in prediction]
-        results[key] = values
-    else:
-        for i, feature in enumerate(model.dependentFeatures):
-            key = feature['key']
+    for i, feature in enumerate(model.dependentFeatures):
+        key = feature['key']
+        if len(model.dependentFeatures) == 1:
+            values = [str(item) for item in prediction]
+        else:
             values = [str(item) for item in prediction[:, i]]
-            results[key] = values
-
+        results[key] = values
 
     results['Probabilities'] = [str(prob) for prob in probabilities]
     results['AD'] = [None for _ in range(len(prediction))]
