@@ -1,3 +1,6 @@
+from jaqpotpy.datasets import JaqpotpyDataset
+import pandas as pd
+
 def decode(request, model):
     df = pd.DataFrame(request.dataset['input'])
     independentFeatures = request.model['independentFeatures']
