@@ -4,17 +4,15 @@ from typing import Any
 
 class PredictionRequest:
 
-    def __init__(self, dataset, model, rawModel, additionalInfo=None, doaMatrix=None):
+    def __init__(self, dataset, model, doa=None):
         self.dataset = dataset
         self.model = model
-        self.rawModel = rawModel
-        self.additionalInfo = additionalInfo
-        self.doaMatrix = doaMatrix
+        self.rawModel = model.rawModel
+        self.additionalInfo = model.additionalInfo
+        self.doa = doa
 
 
 class PredictionRequestPydantic(BaseModel):
     dataset: Any
     model: Any
-    additionalInfo: Any
-    doaMatrix: Any = None
-    rawModel: Any
+    doa: Any = None

@@ -29,8 +29,8 @@ import jaqpotpy
 
 
 @app.get('/')
-def hello_world():
-    return {'Hello': 'World'}
+def health_check():
+    return {'status': 'UP'}
 
 @app.post('/predict/')
 def predict(req: PredictionRequestPydantic):
