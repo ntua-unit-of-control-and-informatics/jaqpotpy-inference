@@ -1,6 +1,7 @@
 from ..entities.prediction_request import PredictionRequestPydantic
 from ..helpers import model_decoder, json_to_predreq
 
+
 def model_post_handler(request: PredictionRequestPydantic):
     model = model_decoder.decode(request.model['rawModel'])
     data_entry_all = json_to_predreq.decode(request, model)
