@@ -4,11 +4,12 @@ import base64
 import onnxruntime
 import numpy as np
 import torch
+import torch.nn.functional as F
 import sys
 import os
-current_dir = os.path.dirname(__file__)
-software_dir = os.path.abspath(os.path.join(current_dir, '../../../../../JQP'))
-sys.path.append(software_dir)
+# current_dir = os.path.dirname(__file__)
+# software_dir = os.path.abspath(os.path.join(current_dir, '../../../../../JQP'))
+# sys.path.append(software_dir)
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 import torch.nn.functional as F
 
@@ -38,11 +39,11 @@ def model_post_handler(request: PredictionRequestPydantic):
     return final_all
 
 def graph_post_handler(request: PredictionRequestPydantic):
-    print(request.model['type'])
+    # Obtain the request info
     onnx_model = base64.b64decode(request.model['rawModel'])
     ort_session = onnxruntime.InferenceSession(onnx_model)
     feat_config = request.extraConfig['torchConfig']['featurizer']   
-    #print(feat_config)
+    # Load the featurizer
     featurizer = SmilesGraphFeaturizer()
     featurizer.load_json_rep(feat_config)
     smiles = request.dataset['input'][0]['SMILES']
@@ -50,17 +51,36 @@ def graph_post_handler(request: PredictionRequestPydantic):
          return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
     data = featurizer.featurize(smiles)
+    # ONNX Inference
     ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(data.x),
               ort_session.get_inputs()[1].name: to_numpy(data.edge_index),
               ort_session.get_inputs()[2].name: to_numpy(torch.zeros(data.x.shape[0], dtype=torch.int64))}
     ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
-    import torch.nn.functional as F
-    probs = [F.sigmoid(ort_outs).squeeze().tolist()]
+    if request.extraConfig['torchConfig']['task'] == 'classification':
+        return graph_binary_classification(request, ort_outs)
+    
+def graph_binary_classification(request: PredictionRequestPydantic, onnx_output):
+    # Classification
+    target_name = request.model['dependentFeatures'][0]['name']
+    probs = [F.sigmoid(onnx_output).squeeze().tolist()]
     preds = [int(prob > 0.5) for prob in probs]
+    # UI Results
     results = {}
     results['Probabilities'] = [str(prob) for prob in probs]
-    results['Y'] = [str(pred) for pred in preds]
+    results[target_name] = [str(pred) for pred in preds]
     final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
     print(final_all)
 
     return final_all
+
+# def graph_regression(request: PredictionRequestPydantic, onnx_output):
+#     # Regression
+#     target_name = request.model['dependentFeatures'][0]['name']
+#     preds = [onnx_output.squeeze().tolist()]
+#     # UI Results
+#     results = {}
+#     results[target_name] = [str(pred) for pred in preds]
+#     final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
+#     print(final_all)
+
+#     return final_all
