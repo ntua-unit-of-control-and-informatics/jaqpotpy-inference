@@ -3,8 +3,10 @@ from fastapi import FastAPI
 from src.handlers.predict import model_post_handler, graph_post_handler
 from src.entities.prediction_request import PredictionRequestPydantic
 from fastapi.responses import JSONResponse
+from src.loggers.log_middleware import LogMiddleware
 
 app = FastAPI()
+app.add_middleware(LogMiddleware)
 
 
 @app.get("/")
@@ -23,4 +25,4 @@ def predict(req: PredictionRequestPydantic):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host="0.0.0.0", port=8002, log_config=None)
