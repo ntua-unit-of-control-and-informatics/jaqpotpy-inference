@@ -70,6 +70,10 @@ def graph_post_handler(request: PredictionRequestPydantic):
     ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
     if request.extraConfig["torchConfig"]["task"] == "classification":
         return graph_binary_classification(request, ort_outs)
+    elif request.extraConfig["torchConfig"]["task"] == "regression":
+        return ort_outs
+    else:
+        raise ValueError("Only classification and regression tasks are supported")
 
 
 def graph_binary_classification(request: PredictionRequestPydantic, onnx_output):
