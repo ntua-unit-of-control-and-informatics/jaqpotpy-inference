@@ -49,7 +49,7 @@ def graph_post_handler(request: PredictionRequestPydantic):
     # Load the featurizer
     featurizer = SmilesGraphFeaturizer()
     featurizer.load_json_rep(feat_config)
-    smiles = request.dataset["input"][0]["SMILES"]
+    smiles = request.dataset["input"][0]
 
     def to_numpy(tensor):
         return (
