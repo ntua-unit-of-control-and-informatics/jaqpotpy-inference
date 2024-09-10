@@ -13,7 +13,6 @@ import torch.nn.functional as F
 # software_dir = os.path.abspath(os.path.join(current_dir, '../../../../../JQP'))
 # sys.path.append(software_dir)
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
-import torch.nn.functional as F
 
 
 def model_post_handler(request: PredictionRequestPydantic):
