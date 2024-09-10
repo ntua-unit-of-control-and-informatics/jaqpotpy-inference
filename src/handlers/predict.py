@@ -5,8 +5,9 @@ import onnxruntime
 import numpy as np
 import torch
 import torch.nn.functional as F
-import sys
-import os
+
+# import sys
+# import os
 
 # current_dir = os.path.dirname(__file__)
 # software_dir = os.path.abspath(os.path.join(current_dir, '../../../../../JQP'))
