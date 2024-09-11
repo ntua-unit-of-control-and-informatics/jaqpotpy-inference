@@ -1,6 +1,7 @@
-from jaqpotpy.datasets import JaqpotpyDataset
 import pandas as pd
 from src.helpers.recreate_featurizer import recreate_featurizer
+from jaqpotpy.datasets import JaqpotpyDataset
+
 
 def decode(request):
     df = pd.DataFrame(request.dataset['input'])
