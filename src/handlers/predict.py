@@ -63,8 +63,24 @@ def graph_post_handler(request: PredictionRequestPydantic):
         ),
     }
     ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
+    if request.model["task"] == "BINARY_CLASSIFICATION":
+        return graph_binary_classification(request, ort_outs)
+    elif request.model["task"] == "REGRESSION":
+        return graph_regression(request, ort_outs)
+    else:
+        raise ValueError(
+            "Only BINARY_CLASSIFICATION and REGRESSION tasks are supported"
+        )
 
-    return graph_binary_classification(request, ort_outs)
+
+def graph_regression(request: PredictionRequestPydantic, onnx_output):
+    target_name = request.model["dependentFeatures"][0]["name"]
+    preds = [onnx_output.squeeze().tolist()]
+    results = {}
+    results[target_name] = [str(pred) for pred in preds]
+    final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
+    print(final_all)
+    return final_all
 
 
 def graph_binary_classification(request: PredictionRequestPydantic, onnx_output):
@@ -78,5 +94,4 @@ def graph_binary_classification(request: PredictionRequestPydantic, onnx_output)
     results[target_name] = [str(pred) for pred in preds]
     final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
     print(final_all)
-
     return final_all
