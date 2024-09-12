@@ -19,8 +19,9 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
             preprocessor_recreated = recreate_preprocessor(preprocessor_name, preprocessor_config)
             onnx_prediction = preprocessor_recreated.inverse_transform(onnx_prediction)
 
-
-    return onnx_prediction[0]
+    if len(request.model['dependentFeatures']) == 1:
+        onnx_prediction = onnx_prediction.flatten()
+    return onnx_prediction
 
 def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
     sess = InferenceSession(model.SerializeToString())
