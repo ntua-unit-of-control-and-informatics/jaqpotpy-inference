@@ -1,9 +1,10 @@
-from pathlib import Path
-import sys
+## This is for my local path
+# from pathlib import Path
+# import sys
 
-path_root = Path(__file__).parents[1]
-print(path_root)
-sys.path.append(str(path_root) + "/jaqpotpy")
+# path_root = Path(__file__).parents[1]
+# print(path_root)
+# sys.path.append(str(path_root) + "/jaqpotpy")
 
 import uvicorn
 from fastapi import FastAPI
