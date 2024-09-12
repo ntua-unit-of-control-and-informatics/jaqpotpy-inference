@@ -1,3 +1,10 @@
+from pathlib import Path
+import sys
+
+path_root = Path(__file__).parents[1]
+print(path_root)
+sys.path.append(str(path_root) + "/jaqpotpy")
+
 import uvicorn
 from fastapi import FastAPI
 from src.handlers.predict import model_post_handler, graph_post_handler

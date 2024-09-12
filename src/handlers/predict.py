@@ -5,13 +5,6 @@ import onnxruntime
 import numpy as np
 import torch
 import torch.nn.functional as F
-
-# import sys
-# import os
-
-# current_dir = os.path.dirname(__file__)
-# software_dir = os.path.abspath(os.path.join(current_dir, '../../../../../JQP'))
-# sys.path.append(software_dir)
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
 
@@ -45,11 +38,13 @@ def graph_post_handler(request: PredictionRequestPydantic):
     # Obtain the request info
     onnx_model = base64.b64decode(request.model["rawModel"])
     ort_session = onnxruntime.InferenceSession(onnx_model)
-    feat_config = request.extraConfig["torchConfig"]["featurizer"]
+    feat_config = request.extraConfig["torchConfig"]["featurizerConfig"]
     # Load the featurizer
     featurizer = SmilesGraphFeaturizer()
-    featurizer.load_json_rep(feat_config)
-    smiles = request.dataset["input"][0]
+    featurizer.load_dict(feat_config)
+    # Sort the allowable sets
+    featurizer.sort_allowable_sets()
+    smiles = request.dataset["input"][0]["SMILES"]
 
     def to_numpy(tensor):
         return (
@@ -68,12 +63,8 @@ def graph_post_handler(request: PredictionRequestPydantic):
         ),
     }
     ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
-    if request.extraConfig["torchConfig"]["task"] == "classification":
-        return graph_binary_classification(request, ort_outs)
-    elif request.extraConfig["torchConfig"]["task"] == "regression":
-        return ort_outs
-    else:
-        raise ValueError("Only classification and regression tasks are supported")
+
+    return graph_binary_classification(request, ort_outs)
 
 
 def graph_binary_classification(request: PredictionRequestPydantic, onnx_output):
@@ -89,16 +80,3 @@ def graph_binary_classification(request: PredictionRequestPydantic, onnx_output)
     print(final_all)
 
     return final_all
-
-
-# def graph_regression(request: PredictionRequestPydantic, onnx_output):
-#     # Regression
-#     target_name = request.model['dependentFeatures'][0]['name']
-#     preds = [onnx_output.squeeze().tolist()]
-#     # UI Results
-#     results = {}
-#     results[target_name] = [str(pred) for pred in preds]
-#     final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
-#     print(final_all)
-
-#     return final_all
