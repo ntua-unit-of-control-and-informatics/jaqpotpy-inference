@@ -1,23 +1,27 @@
 import uvicorn
 from fastapi import FastAPI
-from src.handlers.predict import model_post_handler
+from src.handlers.predict import model_post_handler, graph_post_handler
 from src.entities.prediction_request import PredictionRequestPydantic
 from fastapi.responses import JSONResponse
 from src.loggers.log_middleware import LogMiddleware
-
 
 app = FastAPI()
 app.add_middleware(LogMiddleware)
 
 
-@app.get('/')
+@app.get("/")
 def health_check():
-    return {'status': 'UP'}
+    return {"status": "UP"}
 
 
-@app.post('/predict/')
+@app.post("/predict/")
 def predict(req: PredictionRequestPydantic):
-    return JSONResponse(content=model_post_handler(req))
+    if req.model["type"] == "SKLEARN":
+        return JSONResponse(content=model_post_handler(req))
+    elif req.model["type"] == "TORCH":
+        return JSONResponse(content=graph_post_handler(req))
+    else:
+        raise ValueError("Only SKLEARN and TORCH models are supported")
 
 
 if __name__ == "__main__":
