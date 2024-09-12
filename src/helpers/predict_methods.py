@@ -1,7 +1,8 @@
+import numpy as np
+from onnxruntime import InferenceSession
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from src.helpers.recreate_preprocessor import recreate_preprocessor
-from onnxruntime import InferenceSession
-import numpy as np
+
 
 def predict_onnx(model, dataset: JaqpotpyDataset, request):
     sess = InferenceSession(model.SerializeToString())
@@ -20,3 +21,14 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
 
 
     return onnx_prediction[0]
+
+def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
+    sess = InferenceSession(model.SerializeToString())
+    onnx_probs = sess.run(
+        None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
+    )
+    onnx_probs_list = [
+        max(onnx_probs[1][instance].values())
+        for instance in range(len(onnx_probs[1]))
+    ]
+    return onnx_probs_list
