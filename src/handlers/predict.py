@@ -44,33 +44,26 @@ def graph_post_handler(request: PredictionRequestPydantic):
     featurizer.load_dict(feat_config)
     # Sort the allowable sets
     featurizer.sort_allowable_sets()
-    smiles = request.dataset["input"][0]["SMILES"]
-
-    def to_numpy(tensor):
-        return (
-            tensor.detach().cpu().numpy()
-            if tensor.requires_grad
-            else tensor.cpu().numpy()
-        )
-
-    data = featurizer.featurize(smiles)
-    # ONNX Inference
-    ort_inputs = {
-        ort_session.get_inputs()[0].name: to_numpy(data.x),
-        ort_session.get_inputs()[1].name: to_numpy(data.edge_index),
-        ort_session.get_inputs()[2].name: to_numpy(
-            torch.zeros(data.x.shape[0], dtype=torch.int64)
-        ),
-    }
-    ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
-    if request.model["task"] == "BINARY_CLASSIFICATION":
-        return graph_binary_classification(request, ort_outs)
-    elif request.model["task"] == "REGRESSION":
-        return graph_regression(request, ort_outs)
-    else:
-        raise ValueError(
-            "Only BINARY_CLASSIFICATION and REGRESSION tasks are supported"
-        )
+    input = request.dataset["input"]
+    for inp in input:
+        data = featurizer.featurize(inp["SMILES"])
+        # ONNX Inference
+        ort_inputs = {
+            ort_session.get_inputs()[0].name: _to_numpy(data.x),
+            ort_session.get_inputs()[1].name: _to_numpy(data.edge_index),
+            ort_session.get_inputs()[2].name: _to_numpy(
+                torch.zeros(data.x.shape[0], dtype=torch.int64)
+            ),
+        }
+        ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
+        if request.model["task"] == "BINARY_CLASSIFICATION":
+            return graph_binary_classification(request, ort_outs)
+        elif request.model["task"] == "REGRESSION":
+            return graph_regression(request, ort_outs)
+        else:
+            raise ValueError(
+                "Only BINARY_CLASSIFICATION and REGRESSION tasks are supported"
+            )
 
 
 def graph_regression(request: PredictionRequestPydantic, onnx_output):
@@ -95,3 +88,9 @@ def graph_binary_classification(request: PredictionRequestPydantic, onnx_output)
     final_all = {"predictions": [dict(zip(results, t)) for t in zip(*results.values())]}
     print(final_all)
     return final_all
+
+
+def _to_numpy(tensor):
+    return (
+        tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+    )
