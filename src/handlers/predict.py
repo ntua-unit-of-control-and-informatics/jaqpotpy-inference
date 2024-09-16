@@ -46,13 +46,13 @@ def graph_post_handler(request: PredictionRequestPydantic):
     featurizer.sort_allowable_sets()
     input = request.dataset["input"]
     for inp in input:
-        data = featurizer.featurize(inp["SMILES"])
+        smile = featurizer.featurize(inp["SMILES"])
         # ONNX Inference
         ort_inputs = {
-            ort_session.get_inputs()[0].name: _to_numpy(data.x),
-            ort_session.get_inputs()[1].name: _to_numpy(data.edge_index),
+            ort_session.get_inputs()[0].name: _to_numpy(smile.x),
+            ort_session.get_inputs()[1].name: _to_numpy(smile.edge_index),
             ort_session.get_inputs()[2].name: _to_numpy(
-                torch.zeros(data.x.shape[0], dtype=torch.int64)
+                torch.zeros(smile.x.shape[0], dtype=torch.int64)
             ),
         }
         ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
