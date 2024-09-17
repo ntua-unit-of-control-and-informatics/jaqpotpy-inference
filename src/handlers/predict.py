@@ -20,18 +20,18 @@ def model_post_handler(request: PredictionRequestPydantic):
     model = model_decoder.decode(request.model["rawModel"])
     data_entry_all = json_to_predreq.decode(request)
     prediction = predict_onnx(model, data_entry_all, request)
-    if request.model['task'].lower() == "classification":
+    if request.model["task"].lower() == "classification":
         probabilities = predict_proba_onnx(model, data_entry_all, request)
     else:
         probabilities = [None for _ in range(len(prediction))]
 
     results = {}
-    for i, feature in enumerate(request.model['dependentFeatures']):
-        key = feature['key']
-        if len(request.model['dependentFeatures']) == 1:
-            values = [str(item) for item in prediction]
-        else:
-            values = [str(item) for item in prediction[:, i]]
+    for i, feature in enumerate(request.model["dependentFeatures"]):
+        key = feature["key"]
+        values = [
+            str(item[i]) if len(request.model["dependentFeatures"]) > 1 else str(item)
+            for item in prediction
+        ]
         results[key] = values
 
     results["Probabilities"] = [str(prob) for prob in probabilities]
