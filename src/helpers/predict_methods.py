@@ -11,6 +11,9 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
     )
     if len(request.model["dependentFeatures"]) == 1:
         onnx_prediction = onnx_prediction[0].reshape(-1, 1)
+        # onnx_prediction is being reshaped to a 2D array to avoid errors
+        # when the model has only one dependent feature. In multi-output models,
+        # onnx_prediction is already a 2D array.
 
     if request.model["extraConfig"]["preprocessors"]:
         for i in reversed(range(len(request.model["extraConfig"]["preprocessors"]))):
