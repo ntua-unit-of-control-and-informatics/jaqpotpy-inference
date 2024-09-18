@@ -32,6 +32,8 @@ def decode(request):
         smiles_cols=smiles_cols,
         x_cols=x_cols,
         task=request.model["task"].lower(),
-        featurizer=featurizers[0] if isinstance(featurizers, list) else featurizers,
+        featurizer=featurizers[0]
+        if isinstance(featurizers, list)
+        else featurizers,  # TODO change featurizers[0] to featurizers when JaqpotpyDataset is updated
     )
     return dataset
