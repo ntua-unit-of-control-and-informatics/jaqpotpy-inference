@@ -1,6 +1,6 @@
 import numpy as np
 from onnxruntime import InferenceSession
-from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from src.helpers.recreate_preprocessor import recreate_preprocessor
 
 
