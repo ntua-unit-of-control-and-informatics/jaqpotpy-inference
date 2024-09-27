@@ -12,16 +12,17 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
-        if np_dtype in ["float32", "float64", "int32", "int64"]:
-            target_dtype = np_dtype
-        else:
-            target_dtype = "object"
+        if np_dtype == "float64":
+            np_dtype = "float32"
+        elif np_dtype == ["int64", "uint64"]:
+            np_dtype = "int32"
+
         if len(model.graph.input) == 1:
-            input_feed[independent_feature.name] = dataset.X.values.astype(target_dtype)
+            input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
         else:
             input_feed[independent_feature.name] = (
                 dataset.X[independent_feature.name]
-                .values.astype(target_dtype)
+                .values.astype(np_dtype)
                 .reshape(-1, 1)
             )
     onnx_prediction = sess.run(None, input_feed)
@@ -57,16 +58,17 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
-        if np_dtype in ["float32", "float64", "int32", "int64"]:
-            target_dtype = np_dtype
-        else:
-            target_dtype = "object"
+        if np_dtype == "float64":
+            np_dtype = "float32"
+        elif np_dtype == ["int64", "uint64"]:
+            np_dtype = "int32"
+
         if len(model.graph.input) == 1:
-            input_feed[independent_feature.name] = dataset.X.values.astype(target_dtype)
+            input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
         else:
             input_feed[independent_feature.name] = (
                 dataset.X[independent_feature.name]
-                .values.astype(target_dtype)
+                .values.astype(np_dtype)
                 .reshape(-1, 1)
             )
     onnx_probs = sess.run(None, input_feed)
