@@ -12,10 +12,10 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
-        if np_dtype == "float64":
-            np_dtype = "float32"
-        elif np_dtype == ["int64", "uint64"]:
-            np_dtype = "int32"
+        # if np_dtype == "float64":
+        #     np_dtype = "float32"
+        # elif np_dtype == ["int64", "uint64"]:
+        #     np_dtype = "int32"
 
         if len(model.graph.input) == 1:
             input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
@@ -28,9 +28,6 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
     onnx_prediction = sess.run(None, input_feed)
     if len(request.model["dependentFeatures"]) == 1:
         onnx_prediction = onnx_prediction[0].reshape(-1, 1)
-        # onnx_prediction is being reshaped to a 2D array to avoid errors
-        # when the model has only one dependent feature. In multi-output models,
-        # onnx_prediction is already a 2D array.
     else:
         onnx_prediction = onnx_prediction[0]
 
@@ -58,11 +55,6 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
-        if np_dtype == "float64":
-            np_dtype = "float32"
-        elif np_dtype == ["int64", "uint64"]:
-            np_dtype = "int32"
-
         if len(model.graph.input) == 1:
             input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
         else:
