@@ -12,10 +12,6 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
-        # if np_dtype == "float64":
-        #     np_dtype = "float32"
-        # elif np_dtype == ["int64", "uint64"]:
-        #     np_dtype = "int32"
 
         if len(model.graph.input) == 1:
             input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
