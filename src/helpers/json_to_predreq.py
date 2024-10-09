@@ -6,7 +6,6 @@ from jaqpotpy.datasets import JaqpotpyDataset
 def decode(request):
     df = pd.DataFrame(request.dataset["input"])
     independent_features = request.model["independentFeatures"]
-    # smiles_cols = [feature['key'] for feature in independent_features if feature['featureType'] == 'SMILES']
     smiles_cols = [
         feature["key"]
         for feature in independent_features
