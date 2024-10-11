@@ -32,7 +32,7 @@ def sklearn_post_handler(request: PredictionRequestPydantic):
             for i, feature in enumerate(request.model["dependentFeatures"])
         }
         results["jaqpotInternalId"] = jaqpot_id
-        results["jaqpotInternalMeta"] = {
+        results["jaqpotInternalMetadata"] = {
             "AD": None,
             "Probabilities": probabilities[jaqpot_id],
         }
