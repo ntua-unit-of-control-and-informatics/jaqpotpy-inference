@@ -22,10 +22,7 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
                 .reshape(-1, 1)
             )
     onnx_prediction = sess.run(None, input_feed)
-    if len(request.model["dependentFeatures"]) == 1:
-        onnx_prediction = onnx_prediction[0].reshape(-1, 1)
-    else:
-        onnx_prediction = onnx_prediction[0]
+    onnx_prediction = onnx_prediction[0]
 
     if request.model["extraConfig"]["preprocessors"]:
         for i in reversed(range(len(request.model["extraConfig"]["preprocessors"]))):
@@ -36,6 +33,13 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
             preprocessor_recreated = recreate_preprocessor(
                 preprocessor_name, preprocessor_config
             )
+            if (
+                len(request.model["dependentFeatures"]) == 1
+                and preprocessor_name != "LabelEncoder"
+            ):
+                onnx_prediction = preprocessor_recreated.inverse_transform(
+                    onnx_prediction.reshape(-1, 1)
+                )
             onnx_prediction = preprocessor_recreated.inverse_transform(onnx_prediction)
 
     if len(request.model["dependentFeatures"]) == 1:
