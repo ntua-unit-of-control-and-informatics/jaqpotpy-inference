@@ -37,4 +37,5 @@ def sklearn_post_handler(request: PredictionRequestPydantic):
             "Probabilities": probabilities[jaqpot_id],
         }
         final_all.append(results)
-    return final_all
+
+    return {"predictions": final_all}
