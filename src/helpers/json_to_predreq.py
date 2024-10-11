@@ -5,6 +5,9 @@ from jaqpotpy.datasets import JaqpotpyDataset
 
 def decode(request):
     df = pd.DataFrame(request.dataset["input"])
+    jaqpot_Internal_Id = []
+    for i in range(len(df)):
+        jaqpot_Internal_Id.append(df.iloc[i]["jaqpotInternalId"])
     independent_features = request.model["independentFeatures"]
     smiles_cols = [
         feature["key"]
@@ -33,4 +36,4 @@ def decode(request):
         task=request.model["task"].lower(),
         featurizer=featurizers,
     )
-    return dataset
+    return dataset, jaqpot_Internal_Id
