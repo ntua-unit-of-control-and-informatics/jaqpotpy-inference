@@ -61,6 +61,6 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
             )
     onnx_probs = sess.run(None, input_feed)
     onnx_probs_list = [
-        max(onnx_probs[1][instance].values()) for instance in range(len(onnx_probs[1]))
+        onnx_probs[1][instance] for instance in range(len(onnx_probs[1]))
     ]
     return onnx_probs_list
