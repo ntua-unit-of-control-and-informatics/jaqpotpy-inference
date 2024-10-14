@@ -2,5 +2,5 @@ fastapi==0.111.0
 pydantic==2.7.1
 uvicorn==0.29.0
 starlette~=0.37.2
-jaqpotpy==6.8.2
+jaqpotpy==6.8.3
 
