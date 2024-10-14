@@ -10,6 +10,6 @@ def recreate_featurizer(featurizer_name, featurizer_config):
     for attr, value in featurizer_config.items():
         if attr != "class":  # skip the class attribute
             if isinstance(value, list):
-                value = np.array(value["value"])
+                value = np.array(value)
             setattr(featurizer, attr, value)
     return featurizer
