@@ -1,8 +1,9 @@
-import numpy as np
+import pandas as pd
 import onnx
 from onnxruntime import InferenceSession
 from jaqpotpy.datasets import JaqpotpyDataset
 from src.helpers.recreate_preprocessor import recreate_preprocessor
+from jaqpotpy.doa.doa import Leverage
 
 
 def predict_onnx(model, dataset: JaqpotpyDataset, request):
@@ -21,6 +22,21 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
                 .values.astype(np_dtype)
                 .reshape(-1, 1)
             )
+    if request.model["doas"]:
+        doas_results = []
+        input_df = pd.DataFrame(input_feed["input"])
+        for _, data_instance in input_df.iterrows():
+            doa_instance_prediction = {}
+            for doa_data in request.model["doas"]:
+                if doa_data["method"] == "LEVERAGE":
+                    doa_method = Leverage()
+                    doa_method.h_star = doa_data["doaData"]["hStar"]
+                    doa_method.doa_matrix = doa_data["doaData"]["array"]
+                doa_instance_prediction[doa_method.__name__] = doa_method.predict(
+                    pd.DataFrame(data_instance.values.reshape(1, -1))
+                )[0]
+                doas_results.append(doa_instance_prediction)
+
     onnx_prediction = sess.run(None, input_feed)
     onnx_prediction = onnx_prediction[0]
 
@@ -45,7 +61,7 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
     if len(request.model["dependentFeatures"]) == 1:
         onnx_prediction = onnx_prediction.flatten()
 
-    return onnx_prediction
+    return onnx_prediction, doas_predictions
 
 
 def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
