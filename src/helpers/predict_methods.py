@@ -6,7 +6,57 @@ from src.helpers.recreate_preprocessor import recreate_preprocessor
 from jaqpotpy.doa.doa import Leverage
 
 
+def calculate_doas(input_feed, request):
+    """
+    Calculate the Domain of Applicability (DoA) for given input data using specified methods.
+    Args:
+        input_feed (dict): A dictionary containing the input data under the key "input".
+        request (object): An object containing the model information, specifically the DoA methods
+                          and their corresponding data under the key "model".
+    Returns:
+        list: A list of dictionaries where each dictionary contains the DoA predictions for a single
+              data instance. The keys in the dictionary are the names of the DoA methods used, and
+              the values are the corresponding DoA predictions.
+    """
+
+    doas_results = []
+    input_df = pd.DataFrame(input_feed["input"])
+    for _, data_instance in input_df.iterrows():
+        doa_instance_prediction = {}
+        for doa_data in request.model["doas"]:
+            if doa_data["method"] == "LEVERAGE":
+                doa_method = Leverage()
+                doa_method.h_star = doa_data["doaData"]["hStar"]
+                doa_method.doa_matrix = doa_data["doaData"]["array"]
+            doa_instance_prediction[doa_method.__name__] = doa_method.predict(
+                pd.DataFrame(data_instance.values.reshape(1, -1))
+            )[0]
+            doas_results.append(doa_instance_prediction)
+    return doas_results
+
+
 def predict_onnx(model, dataset: JaqpotpyDataset, request):
+    """
+    Perform prediction using an ONNX model.
+    Parameters:
+    model (onnx.ModelProto): The ONNX model to be used for prediction.
+    dataset (JaqpotpyDataset): The dataset containing the input features.
+    request (dict): A dictionary containing additional configuration for the prediction,
+                    including model-specific settings and preprocessors.
+    Returns:
+    tuple: A tuple containing the ONNX model predictions and DOA results (if applicable).
+    The function performs the following steps:
+    1. Initializes an ONNX InferenceSession with the serialized model.
+    2. Prepares the input feed by converting dataset features to the appropriate numpy data types.
+    3. If doas (Domain of Applicability) is requested, it calculates the DOAS results.
+    4. Runs the ONNX model to get predictions.
+    5. Applies any specified preprocessors in reverse order to the predictions.
+    6. Flattens the predictions if there is only one dependent feature.
+    Note:
+    - The function assumes that the dataset features and model inputs are aligned.
+    - The request dictionary should contain the necessary configuration for preprocessors and DOAS.
+    """
+
     sess = InferenceSession(model.SerializeToString())
     input_feed = {}
     for independent_feature in model.graph.input:
@@ -23,19 +73,7 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
                 .reshape(-1, 1)
             )
     if request.model["doas"]:
-        doas_results = []
-        input_df = pd.DataFrame(input_feed["input"])
-        for _, data_instance in input_df.iterrows():
-            doa_instance_prediction = {}
-            for doa_data in request.model["doas"]:
-                if doa_data["method"] == "LEVERAGE":
-                    doa_method = Leverage()
-                    doa_method.h_star = doa_data["doaData"]["hStar"]
-                    doa_method.doa_matrix = doa_data["doaData"]["array"]
-                doa_instance_prediction[doa_method.__name__] = doa_method.predict(
-                    pd.DataFrame(data_instance.values.reshape(1, -1))
-                )[0]
-                doas_results.append(doa_instance_prediction)
+        doas_results = calculate_doas(input_feed, request)
 
     onnx_prediction = sess.run(None, input_feed)
     onnx_prediction = onnx_prediction[0]
@@ -61,10 +99,21 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
     if len(request.model["dependentFeatures"]) == 1:
         onnx_prediction = onnx_prediction.flatten()
 
-    return onnx_prediction, doas_predictions
+    return onnx_prediction, doas_results
 
 
 def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
+    """
+    Predict the probability estimates for a given dataset using an ONNX model.
+    Parameters:
+    model (onnx.ModelProto): The ONNX model used for prediction.
+    dataset (JaqpotpyDataset): The dataset containing the features for prediction.
+    request (dict): A dictionary containing additional request information, including model configuration.
+    Returns:
+    list: A list of dictionaries where each dictionary contains the predicted probabilities for each class,
+          with class labels as keys and rounded probability values as values.
+    """
+
     sess = InferenceSession(model.SerializeToString())
     input_feed = {}
     for independent_feature in model.graph.input:
