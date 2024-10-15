@@ -80,7 +80,15 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
                 .reshape(-1, 1)
             )
     onnx_probs = sess.run(None, input_feed)
-    onnx_probs_list = [
-        onnx_probs[1][instance] for instance in range(len(onnx_probs[1]))
-    ]
-    return onnx_probs_list
+    probs_list = []
+    for instance in onnx_probs[1]:
+        rounded_instance = {k: round(v, 3) for k, v in instance.items()}
+        if request.model["extraConfig"]["preprocessors"][0]["name"] == "LabelEncoder":
+            labels = request.model["extraConfig"]["preprocessors"][0]["config"][
+                "classes_"
+            ]
+            rounded_instance = {labels[k]: v for k, v in rounded_instance.items()}
+
+        probs_list.append(rounded_instance)
+
+    return probs_list
