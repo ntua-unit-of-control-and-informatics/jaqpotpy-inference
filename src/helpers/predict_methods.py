@@ -3,7 +3,7 @@ import onnx
 from onnxruntime import InferenceSession
 from jaqpotpy.datasets import JaqpotpyDataset
 from src.helpers.recreate_preprocessor import recreate_preprocessor
-from jaqpotpy.doa.doa import Leverage
+from jaqpotpy.doa.doa import Leverage, BoundingBox
 
 
 def calculate_doas(input_feed, request):
@@ -28,6 +28,9 @@ def calculate_doas(input_feed, request):
                 doa_method = Leverage()
                 doa_method.h_star = doa_data["doaData"]["hStar"]
                 doa_method.doa_matrix = doa_data["doaData"]["array"]
+            elif doa_data["method"] == "BOUNDING_BOX":
+                doa_method = BoundingBox()
+                doa_method._bounding_box = doa_data["doaData"]["_bounding_box"]
             doa_instance_prediction[doa_method.__name__] = doa_method.predict(
                 pd.DataFrame(data_instance.values.reshape(1, -1))
             )[0]
