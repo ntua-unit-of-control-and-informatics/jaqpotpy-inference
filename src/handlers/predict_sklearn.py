@@ -33,10 +33,10 @@ def sklearn_post_handler(request: PredictionRequestPydantic):
             else prediction[jaqpot_id, i]
             for i, feature in enumerate(request.model["dependentFeatures"])
         }
-        results["jaqpotInternalMetadata"] = {
-            "jaqpotInternalId": jaqpot_id,
-            "AD": doas_predictions[jaqpot_id] if doas_predictions else None,
-            "Probabilities": probabilities[jaqpot_id],
+        results["jaqpotMetadata"] = {
+            "jaqpotRowData": jaqpot_id,
+            "doa": doas_predictions[jaqpot_id] if doas_predictions else None,
+            "probabilities": probabilities[jaqpot_id],
         }
         final_all.append(results)
     return {"predictions": final_all}
