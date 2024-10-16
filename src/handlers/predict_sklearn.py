@@ -9,7 +9,7 @@ from jaqpotpy.doa.doa import Leverage
 def sklearn_post_handler(request: PredictionRequestPydantic):
     model = model_decoder.decode(request.model["rawModel"])
     data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
-    prediction = predict_onnx(model, data_entry_all, request)
+    prediction, doa_predictions = predict_onnx(model, data_entry_all, request)
     task = request.model["task"].lower()
     if task == "binary_classification" or task == "multiclass_classification":
         probabilities = predict_proba_onnx(model, data_entry_all, request)
@@ -34,8 +34,8 @@ def sklearn_post_handler(request: PredictionRequestPydantic):
             else prediction[jaqpot_row_id, i]
             for i, feature in enumerate(request.model["dependentFeatures"])
         }
-        results["jaqpotMetadata"] = {
-            "AD": None,
+        results["jaqpotMetaData"] = {
+            "doa": doa_predictions[jaqpot_row_id] if doa_predictions else None,
             "probabilities": probabilities[jaqpot_row_id],
             "jaqpotRowId": jaqpot_row_id,
         }
