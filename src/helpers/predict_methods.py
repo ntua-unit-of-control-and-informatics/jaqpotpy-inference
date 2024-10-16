@@ -30,11 +30,11 @@ def calculate_doas(input_feed, request):
                 doa_method.doa_matrix = doa_data["doaData"]["doaMatrix"]
             elif doa_data["method"] == "BOUNDING_BOX":
                 doa_method = BoundingBox()
-                doa_method._bounding_box = doa_data["doaData"]["boundingBox"]
+                doa_method.bounding_box = doa_data["doaData"]["boundingBox"]
             doa_instance_prediction[doa_method.__name__] = doa_method.predict(
                 pd.DataFrame(data_instance.values.reshape(1, -1))
             )[0]
-            doas_results.append(doa_instance_prediction)
+        doas_results.append(doa_instance_prediction)
     return doas_results
 
 
