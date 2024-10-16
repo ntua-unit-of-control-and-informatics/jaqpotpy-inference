@@ -35,9 +35,8 @@ def sklearn_post_handler(request: PredictionRequestPydantic):
         }
         results["jaqpotInternalMetadata"] = {
             "jaqpotInternalId": jaqpot_id,
-            "AD": doas_predictions[jaqpot_id],
+            "AD": doas_predictions[jaqpot_id] if doas_predictions else None,
             "Probabilities": probabilities[jaqpot_id],
         }
         final_all.append(results)
-
     return {"predictions": final_all}

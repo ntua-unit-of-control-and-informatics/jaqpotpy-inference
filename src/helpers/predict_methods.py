@@ -74,9 +74,10 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
             )
     if request.model["doas"]:
         doas_results = calculate_doas(input_feed, request)
+    else:
+        doas_results = None
 
-    onnx_prediction = sess.run(None, input_feed)
-    onnx_prediction = onnx_prediction[0]
+    onnx_prediction = sess.run(None, input_feed)[0]
 
     if request.model["extraConfig"]["preprocessors"]:
         for i in reversed(range(len(request.model["extraConfig"]["preprocessors"]))):
