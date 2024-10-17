@@ -3,7 +3,7 @@ from ..helpers import model_decoder, json_to_predreq
 from ..helpers.predict_methods import predict_onnx, predict_proba_onnx
 import numpy as np
 
-from jaqpotpy.doa.doa import Leverage
+from jaqpotpy.doa import Leverage
 
 
 def sklearn_post_handler(request: PredictionRequestPydantic):
