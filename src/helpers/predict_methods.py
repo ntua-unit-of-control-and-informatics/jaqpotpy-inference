@@ -38,7 +38,6 @@ def calculate_doas(input_feed, request):
                 pd.DataFrame(data_instance.values.reshape(1, -1))
             )[0]
         # Majority voting
-        doa_instance_prediction["majorityVoting"] = None
         if len(request.model["doas"]) > 1:
             in_doa_values = [
                 value["inDoa"] for value in doa_instance_prediction.values()
@@ -46,6 +45,8 @@ def calculate_doas(input_feed, request):
             doa_instance_prediction["majorityVoting"] = (
                 in_doa_values.count(True) > len(in_doa_values) / 2
             )
+        else:
+            doa_instance_prediction["majorityVoting"] = None
         doas_results.append(doa_instance_prediction)
     return doas_results
 
