@@ -3,7 +3,7 @@ import onnx
 from onnxruntime import InferenceSession
 from jaqpotpy.datasets import JaqpotpyDataset
 from src.helpers.recreate_preprocessor import recreate_preprocessor
-from jaqpotpy.doa.doa import Leverage, BoundingBox, MeanVar
+from jaqpotpy.doa import Leverage, BoundingBox, MeanVar
 
 
 def calculate_doas(input_feed, request):
