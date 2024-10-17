@@ -43,7 +43,7 @@ def calculate_doas(input_feed, request):
                 value["inDoa"] for value in doa_instance_prediction.values()
             ]
             doa_instance_prediction["majorityVoting"] = (
-                in_doa_values.count(True) > len(in_doa_values) / 2
+                in_doa_values.count(True) > (len(in_doa_values) / 2)
             )
         else:
             doa_instance_prediction["majorityVoting"] = None
