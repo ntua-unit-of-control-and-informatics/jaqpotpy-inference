@@ -42,8 +42,8 @@ def calculate_doas(input_feed, request):
             in_doa_values = [
                 value["inDoa"] for value in doa_instance_prediction.values()
             ]
-            doa_instance_prediction["majorityVoting"] = (
-                in_doa_values.count(True) > (len(in_doa_values) / 2)
+            doa_instance_prediction["majorityVoting"] = in_doa_values.count(True) > (
+                len(in_doa_values) / 2
             )
         else:
             doa_instance_prediction["majorityVoting"] = None
@@ -149,7 +149,11 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
     probs_list = []
     for instance in onnx_probs[1]:
         rounded_instance = {k: round(v, 3) for k, v in instance.items()}
-        if request.model["extraConfig"]["preprocessors"][0]["name"] == "LabelEncoder":
+        if (
+            request.model["extraConfig"]["preprocessors"]
+            and request.model["extraConfig"]["preprocessors"][0]["name"]
+            == "LabelEncoder"
+        ):
             labels = request.model["extraConfig"]["preprocessors"][0]["config"][
                 "classes_"
             ]
