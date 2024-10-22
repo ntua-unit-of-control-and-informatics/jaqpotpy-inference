@@ -77,7 +77,7 @@ def graph_regression(target_name, output, inp):
     results = {}
     results["jaqpotMetadata"] = {"jaqpotRowId": inp["jaqpotRowId"]}
     if "jaqpotRowLabel" in inp:
-        results["jaqpotMetadata"] = {"jaqpotRowLabel": inp["jaqpotRowLabel"]}
+        results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
     results[target_name] = pred
     return results
 
@@ -92,7 +92,7 @@ def graph_binary_classification(target_name, output, inp):
         "jaqpotRowId": inp["jaqpotRowId"],
     }
     if "jaqpotRowLabel" in inp:
-        results["jaqpotMetadata"] = {"jaqpotRowLabel": inp["jaqpotRowLabel"]}
+        results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
     results[target_name] = pred
     results[target_name] = pred
     return results
