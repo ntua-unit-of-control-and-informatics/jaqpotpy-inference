@@ -94,7 +94,6 @@ def graph_binary_classification(target_name, output, inp):
     if "jaqpotRowLabel" in inp:
         results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
     results[target_name] = pred
-    results[target_name] = pred
     return results
 
 
