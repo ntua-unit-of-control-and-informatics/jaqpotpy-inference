@@ -36,4 +36,5 @@ def decode(request):
         task=request.model["task"].lower(),
         featurizer=featurizers,
     )
+    dataset.select_features(SelectionList=request.model["selectedFeatures"])
     return dataset, jaqpot_row_ids
