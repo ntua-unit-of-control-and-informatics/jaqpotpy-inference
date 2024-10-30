@@ -99,7 +99,7 @@ def graph_binary_classification(target_name, output, inp):
 
 
 def check_model_task(model_task, target_name, out, row_id):
-    if model_task == "BINARY_CLASSIFICATIONss":
+    if model_task == "BINARY_CLASSIFICATION":
         return graph_binary_classification(target_name, out, row_id)
     elif model_task == "REGRESSION":
         return graph_regression(target_name, out, row_id)
