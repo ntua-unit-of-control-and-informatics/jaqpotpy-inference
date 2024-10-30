@@ -9,6 +9,7 @@
 import uvicorn
 from fastapi import FastAPI
 
+from src.api.openapi import PredictionResponse
 from src.api.openapi.models.prediction_request import PredictionRequest
 from src.handlers.predict_sklearn import sklearn_post_handler
 from src.handlers.predict_pyg import graph_post_handler
@@ -25,11 +26,11 @@ def health_check():
 
 
 @app.post("/predict/")
-def predict(req: PredictionRequest):
+def predict(req: PredictionRequest) -> PredictionResponse:
     if req.model.type == "SKLEARN":
-        return JSONResponse(content=sklearn_post_handler(req))
+        return sklearn_post_handler(req)
     else:
-        return JSONResponse(content=graph_post_handler(req))
+        return graph_post_handler(req)
 
 
 if __name__ == "__main__":

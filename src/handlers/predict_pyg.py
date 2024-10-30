@@ -3,33 +3,34 @@ import onnxruntime
 import torch
 import io
 import numpy as np
-import torch.nn.functional as F
+import torch.nn.functional as f
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
+from src.api.openapi import PredictionResponse
 from src.api.openapi.models.prediction_request import PredictionRequest
 
 
-def graph_post_handler(request: PredictionRequest):
-    feat_config = request.extra_config.torchConfig.featurizerConfig
+def graph_post_handler(request: PredictionRequest) -> PredictionResponse:
+    feat_config = request.extra_config["torchConfig"].featurizerConfig
     featurizer = _load_featurizer(feat_config)
     target_name = request.model.dependent_features[0].name
     model_task = request.model.task
     user_input = request.dataset.input
     raw_model = request.model.raw_model
-    preds = []
+    predictions = []
     if request.model.type == "TORCH_ONNX":
         for inp in user_input:
             model_output = onnx_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
-            preds.append(check_model_task(model_task, target_name, model_output, inp))
+            predictions.append(check_model_task(model_task, target_name, model_output, inp))
     elif request.model.type == "TORCHSCRIPT":
         for inp in user_input:
             model_output = torchscript_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
-            preds.append(check_model_task(model_task, target_name, model_output, inp))
-    return {"predictions": preds}
+            predictions.append(check_model_task(model_task, target_name, model_output, inp))
+    return PredictionResponse(predictions=predictions)
 
 
 def onnx_post_handler(raw_model, data):
@@ -75,8 +76,7 @@ def _load_featurizer(config):
 
 def graph_regression(target_name, output, inp):
     pred = [output.squeeze().tolist()]
-    results = {}
-    results["jaqpotMetadata"] = {"jaqpotRowId": inp["jaqpotRowId"]}
+    results = {"jaqpotMetadata": {"jaqpotRowId": inp["jaqpotRowId"]}}
     if "jaqpotRowLabel" in inp:
         results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
     results[target_name] = pred
@@ -84,14 +84,13 @@ def graph_regression(target_name, output, inp):
 
 
 def graph_binary_classification(target_name, output, inp):
-    proba = F.sigmoid(output).squeeze().tolist()
+    proba = f.sigmoid(output).squeeze().tolist()
     pred = int(proba > 0.5)
     # UI Results
-    results = {}
-    results["jaqpotMetadata"] = {
+    results = {"jaqpotMetadata": {
         "probabilities": [round((1 - proba), 3), round(proba, 3)],
         "jaqpotRowId": inp["jaqpotRowId"],
-    }
+    }}
     if "jaqpotRowLabel" in inp:
         results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
     results[target_name] = pred

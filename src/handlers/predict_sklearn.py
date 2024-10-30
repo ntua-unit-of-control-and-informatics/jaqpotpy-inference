@@ -1,12 +1,11 @@
+from ..api.openapi import PredictionResponse
 from ..api.openapi.models.prediction_request import PredictionRequest
 from ..helpers import model_decoder, json_to_predreq
 from ..helpers.predict_methods import predict_onnx, predict_proba_onnx
 import numpy as np
 
-from jaqpotpy.doa import Leverage
 
-
-def sklearn_post_handler(request: PredictionRequest):
+def sklearn_post_handler(request: PredictionRequest) -> PredictionResponse:
     model = model_decoder.decode(request.model.raw_model)
     data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
     prediction, doa_predictions = predict_onnx(model, data_entry_all, request)
@@ -16,7 +15,7 @@ def sklearn_post_handler(request: PredictionRequest):
     else:
         probabilities = [None for _ in range(len(prediction))]
 
-    final_all = []
+    predictions = []
     for jaqpot_row_id in jaqpot_row_ids:
         if len(request.model.dependent_features) == 1:
             prediction = prediction.reshape(-1, 1)
@@ -39,5 +38,5 @@ def sklearn_post_handler(request: PredictionRequest):
             "probabilities": probabilities[jaqpot_row_id],
             "jaqpotRowId": jaqpot_row_id,
         }
-        final_all.append(results)
-    return {"predictions": final_all}
+        predictions.append(results)
+    return PredictionResponse(predictions=predictions)
