@@ -11,4 +11,4 @@ COPY ./main.py /code/
 
 EXPOSE 8002
 
-CMD ["fastapi", "run", "main.py", "--port", "8002"]
+CMD ["python", "-m", "main", "--port", "8002"]
