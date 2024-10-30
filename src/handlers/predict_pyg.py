@@ -23,13 +23,17 @@ def graph_post_handler(request: PredictionRequest) -> PredictionResponse:
             model_output = onnx_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
-            predictions.append(check_model_task(model_task, target_name, model_output, inp))
+            predictions.append(
+                check_model_task(model_task, target_name, model_output, inp)
+            )
     elif request.model.type == "TORCHSCRIPT":
         for inp in user_input:
             model_output = torchscript_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
-            predictions.append(check_model_task(model_task, target_name, model_output, inp))
+            predictions.append(
+                check_model_task(model_task, target_name, model_output, inp)
+            )
     return PredictionResponse(predictions=predictions)
 
 
@@ -87,10 +91,12 @@ def graph_binary_classification(target_name, output, inp):
     proba = f.sigmoid(output).squeeze().tolist()
     pred = int(proba > 0.5)
     # UI Results
-    results = {"jaqpotMetadata": {
-        "probabilities": [round((1 - proba), 3), round(proba, 3)],
-        "jaqpotRowId": inp["jaqpotRowId"],
-    }}
+    results = {
+        "jaqpotMetadata": {
+            "probabilities": [round((1 - proba), 3), round(proba, 3)],
+            "jaqpotRowId": inp["jaqpotRowId"],
+        }
+    }
     if "jaqpotRowLabel" in inp:
         results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
     results[target_name] = pred
