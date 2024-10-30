@@ -22,8 +22,8 @@ def decode(request):
     featurizers = []
     if request.model.extra_config["featurizers"]:
         for i in range(len(request.model.extra_config["featurizers"])):
-            featurizer_name = request.model.extra_config["featurizers"][i].name
-            featurizer_config = request.model.extra_config["featurizers"][i].config
+            featurizer_name = request.model.extra_config["featurizers"][i]["name"]
+            featurizer_config = request.model.extra_config["featurizers"][i]["config"]
             featurizer = recreate_featurizer(featurizer_name, featurizer_config)
             featurizers.append(featurizer)
     else:
