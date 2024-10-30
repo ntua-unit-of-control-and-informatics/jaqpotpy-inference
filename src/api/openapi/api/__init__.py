@@ -9,4 +9,3 @@ from src.api.openapi.api.lead_api import LeadApi
 from src.api.openapi.api.model_api import ModelApi
 from src.api.openapi.api.organization_api import OrganizationApi
 from src.api.openapi.api.organization_invitation_api import OrganizationInvitationApi
-
