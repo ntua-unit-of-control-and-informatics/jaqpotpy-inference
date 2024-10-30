@@ -1,4 +1,4 @@
-from ..entities.prediction_request import PredictionRequestPydantic
+from ..api.openapi.models.prediction_request import PredictionRequest
 from ..helpers import model_decoder, json_to_predreq
 from ..helpers.predict_methods import predict_onnx, predict_proba_onnx
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 from jaqpotpy.doa import Leverage
 
 
-def sklearn_post_handler(request: PredictionRequestPydantic):
+def sklearn_post_handler(request: PredictionRequest):
     model = model_decoder.decode(request.model["rawModel"])
     data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
     prediction, doa_predictions = predict_onnx(model, data_entry_all, request)

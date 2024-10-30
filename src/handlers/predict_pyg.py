@@ -1,4 +1,3 @@
-from ..entities.prediction_request import PredictionRequestPydantic
 import base64
 import onnxruntime
 import torch
@@ -7,8 +6,10 @@ import numpy as np
 import torch.nn.functional as F
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
+from src.api.openapi.models.prediction_request import PredictionRequest
 
-def graph_post_handler(request: PredictionRequestPydantic):
+
+def graph_post_handler(request: PredictionRequest):
     feat_config = request.extraConfig["torchConfig"]["featurizerConfig"]
     featurizer = _load_featurizer(feat_config)
     target_name = request.model["dependentFeatures"][0]["name"]
