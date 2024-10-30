@@ -23,22 +23,22 @@ def calculate_doas(input_feed, request):
     input_df = pd.DataFrame(input_feed["input"])
     for _, data_instance in input_df.iterrows():
         doa_instance_prediction = {}
-        for doa_data in request.model["doas"]:
-            if doa_data["method"] == "LEVERAGE":
+        for doa_data in request.model.doas:
+            if doa_data.method == "LEVERAGE":
                 doa_method = Leverage()
-                doa_method.h_star = doa_data["doaData"]["hStar"]
-                doa_method.doa_matrix = doa_data["doaData"]["doaMatrix"]
-            elif doa_data["method"] == "BOUNDING_BOX":
+                doa_method.h_star = doa_data.data.hStar
+                doa_method.doa_matrix = doa_data.data.doaMatrix
+            elif doa_data.method == "BOUNDING_BOX":
                 doa_method = BoundingBox()
-                doa_method.bounding_box = doa_data["doaData"]["boundingBox"]
-            elif doa_data["method"] == "MEAN_VAR":
+                doa_method.bounding_box = doa_data.data.boundingBox
+            elif doa_data.method == "MEAN_VAR":
                 doa_method = MeanVar()
-                doa_method.bounds = doa_data["doaData"]["bounds"]
+                doa_method.bounds = doa_data.data.bounds
             doa_instance_prediction[doa_method.__name__] = doa_method.predict(
                 pd.DataFrame(data_instance.values.reshape(1, -1))
             )[0]
         # Majority voting
-        if len(request.model["doas"]) > 1:
+        if len(request.model.doas) > 1:
             in_doa_values = [
                 value["inDoa"] for value in doa_instance_prediction.values()
             ]
@@ -88,24 +88,22 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
                 .values.astype(np_dtype)
                 .reshape(-1, 1)
             )
-    if request.model["doas"]:
+    if request.model.doas:
         doas_results = calculate_doas(input_feed, request)
     else:
         doas_results = None
 
     onnx_prediction = sess.run(None, input_feed)[0]
 
-    if request.model["extraConfig"]["preprocessors"]:
-        for i in reversed(range(len(request.model["extraConfig"]["preprocessors"]))):
-            preprocessor_name = request.model["extraConfig"]["preprocessors"][i]["name"]
-            preprocessor_config = request.model["extraConfig"]["preprocessors"][i][
-                "config"
-            ]
+    if request.model.extra_config["preprocessors"]:
+        for i in reversed(range(len(request.model.extra_config["preprocessors"]))):
+            preprocessor_name = request.model.extra_config["preprocessors"][i].name
+            preprocessor_config = request.model.extra_config["preprocessors"][i].config
             preprocessor_recreated = recreate_preprocessor(
                 preprocessor_name, preprocessor_config
             )
             if (
-                len(request.model["dependentFeatures"]) == 1
+                len(request.model.dependent_features) == 1
                 and preprocessor_name != "LabelEncoder"
             ):
                 onnx_prediction = preprocessor_recreated.inverse_transform(
@@ -113,7 +111,7 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
                 )
             onnx_prediction = preprocessor_recreated.inverse_transform(onnx_prediction)
 
-    if len(request.model["dependentFeatures"]) == 1:
+    if len(request.model.dependent_features) == 1:
         onnx_prediction = onnx_prediction.flatten()
 
     return onnx_prediction, doas_results
@@ -150,11 +148,11 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
     for instance in onnx_probs[1]:
         rounded_instance = {k: round(v, 3) for k, v in instance.items()}
         if (
-            request.model["extraConfig"]["preprocessors"]
-            and request.model["extraConfig"]["preprocessors"][0]["name"]
+            request.model.extra_config["preprocessors"]
+            and request.model.extra_config["preprocessors"][0].name
             == "LabelEncoder"
         ):
-            labels = request.model["extraConfig"]["preprocessors"][0]["config"][
+            labels = request.model.extra_config["preprocessors"][0].config[
                 "classes_"
             ]
             rounded_instance = {labels[k]: v for k, v in rounded_instance.items()}

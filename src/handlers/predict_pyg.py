@@ -1,4 +1,3 @@
-from ..entities.prediction_request import PredictionRequestPydantic
 import base64
 import onnxruntime
 import torch
@@ -7,22 +6,24 @@ import numpy as np
 import torch.nn.functional as F
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
+from src.api.openapi.models.prediction_request import PredictionRequest
 
-def graph_post_handler(request: PredictionRequestPydantic):
-    feat_config = request.extraConfig["torchConfig"]["featurizerConfig"]
+
+def graph_post_handler(request: PredictionRequest):
+    feat_config = request.extra_config.torchConfig.featurizerConfig
     featurizer = _load_featurizer(feat_config)
-    target_name = request.model["dependentFeatures"][0]["name"]
-    model_task = request.model["task"]
-    user_input = request.dataset["input"]
-    raw_model = request.model["rawModel"]
+    target_name = request.model.dependent_features[0].name
+    model_task = request.model.task
+    user_input = request.dataset.input
+    raw_model = request.model.raw_model
     preds = []
-    if request.model["type"] == "TORCH_ONNX":
+    if request.model.type == "TORCH_ONNX":
         for inp in user_input:
             model_output = onnx_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
             preds.append(check_model_task(model_task, target_name, model_output, inp))
-    elif request.model["type"] == "TORCHSCRIPT":
+    elif request.model.type == "TORCHSCRIPT":
         for inp in user_input:
             model_output = torchscript_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
