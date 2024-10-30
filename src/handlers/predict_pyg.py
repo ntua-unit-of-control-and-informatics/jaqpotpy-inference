@@ -10,20 +10,20 @@ from src.api.openapi.models.prediction_request import PredictionRequest
 
 
 def graph_post_handler(request: PredictionRequest):
-    feat_config = request.extraConfig["torchConfig"]["featurizerConfig"]
+    feat_config = request.extra_config.torchConfig.featurizerConfig
     featurizer = _load_featurizer(feat_config)
-    target_name = request.model["dependentFeatures"][0]["name"]
-    model_task = request.model["task"]
-    user_input = request.dataset["input"]
-    raw_model = request.model["rawModel"]
+    target_name = request.model.dependent_features[0].name
+    model_task = request.model.task
+    user_input = request.dataset.input
+    raw_model = request.model.raw_model
     preds = []
-    if request.model["type"] == "TORCH_ONNX":
+    if request.model.type == "TORCH_ONNX":
         for inp in user_input:
             model_output = onnx_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
             preds.append(check_model_task(model_task, target_name, model_output, inp))
-    elif request.model["type"] == "TORCHSCRIPT":
+    elif request.model.type == "TORCHSCRIPT":
         for inp in user_input:
             model_output = torchscript_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
@@ -99,7 +99,7 @@ def graph_binary_classification(target_name, output, inp):
 
 
 def check_model_task(model_task, target_name, out, row_id):
-    if model_task == "BINARY_CLASSIFICATION":
+    if model_task == "BINARY_CLASSIFICATIONss":
         return graph_binary_classification(target_name, out, row_id)
     elif model_task == "REGRESSION":
         return graph_regression(target_name, out, row_id)

@@ -8,22 +8,22 @@ def decode(request):
     jaqpot_row_ids = []
     for i in range(len(df)):
         jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
-    independent_features = request.model.independentFeatures
+    independent_features = request.model.independent_features
     smiles_cols = [
         feature.key
         for feature in independent_features
-        if feature.featureType == "SMILES"
+        if feature.feature_type == "SMILES"
     ] or None
     x_cols = [
         feature.key
         for feature in independent_features
-        if feature.featureType != "SMILES"
+        if feature.feature_type != "SMILES"
     ]
     featurizers = []
-    if request.model.extraConfig.featurizers:
-        for i in range(len(request.model.extraConfig.featurizers)):
-            featurizer_name = request.model.extraConfig.featurizers[i].name
-            featurizer_config = request.model.extraConfig.featurizers[i].config
+    if request.model.extra_config["featurizers"]:
+        for i in range(len(request.model.extra_config["featurizers"])):
+            featurizer_name = request.model.extra_config["featurizers"][i].name
+            featurizer_config = request.model.extra_config["featurizers"][i].config
             featurizer = recreate_featurizer(featurizer_name, featurizer_config)
             featurizers.append(featurizer)
     else:

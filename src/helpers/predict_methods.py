@@ -95,15 +95,15 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
 
     onnx_prediction = sess.run(None, input_feed)[0]
 
-    if request.model.extraConfig.preprocessors:
-        for i in reversed(range(len(request.model.extraConfig.preprocessors))):
-            preprocessor_name = request.model.extraConfig.preprocessors[i].name
-            preprocessor_config = request.model.extraConfig.preprocessors[i].config
+    if request.model.extra_config["preprocessors"]:
+        for i in reversed(range(len(request.model.extra_config["preprocessors"]))):
+            preprocessor_name = request.model.extra_config["preprocessors"][i].name
+            preprocessor_config = request.model.extra_config["preprocessors"][i].config
             preprocessor_recreated = recreate_preprocessor(
                 preprocessor_name, preprocessor_config
             )
             if (
-                len(request.model.dependentFeatures) == 1
+                len(request.model.dependent_features) == 1
                 and preprocessor_name != "LabelEncoder"
             ):
                 onnx_prediction = preprocessor_recreated.inverse_transform(
@@ -111,7 +111,7 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
                 )
             onnx_prediction = preprocessor_recreated.inverse_transform(onnx_prediction)
 
-    if len(request.model.dependentFeatures) == 1:
+    if len(request.model.dependent_features) == 1:
         onnx_prediction = onnx_prediction.flatten()
 
     return onnx_prediction, doas_results
@@ -148,11 +148,11 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
     for instance in onnx_probs[1]:
         rounded_instance = {k: round(v, 3) for k, v in instance.items()}
         if (
-            request.model.extraConfig.preprocessors
-            and request.model.extraConfig.preprocessors[0].name
+            request.model.extra_config["preprocessors"]
+            and request.model.extra_config["preprocessors"][0].name
             == "LabelEncoder"
         ):
-            labels = request.model.extraConfig.preprocessors[0].config[
+            labels = request.model.extra_config["preprocessors"][0].config[
                 "classes_"
             ]
             rounded_instance = {labels[k]: v for k, v in rounded_instance.items()}
