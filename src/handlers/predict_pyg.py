@@ -11,7 +11,7 @@ from src.api.openapi.models.prediction_request import PredictionRequest
 
 
 def graph_post_handler(request: PredictionRequest) -> PredictionResponse:
-    feat_config = request.extra_config["torchConfig"].featurizerConfig
+    feat_config = request.extra_config["torchConfig"]["featurizerConfig"]
     featurizer = _load_featurizer(feat_config)
     target_name = request.model.dependent_features[0].name
     model_task = request.model.task

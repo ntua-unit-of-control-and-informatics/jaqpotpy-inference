@@ -97,8 +97,8 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
 
     if request.model.extra_config["preprocessors"]:
         for i in reversed(range(len(request.model.extra_config["preprocessors"]))):
-            preprocessor_name = request.model.extra_config["preprocessors"][i].name
-            preprocessor_config = request.model.extra_config["preprocessors"][i].config
+            preprocessor_name = request.model.extra_config["preprocessors"][i]["name"]
+            preprocessor_config = request.model.extra_config["preprocessors"][i]["config"]
             preprocessor_recreated = recreate_preprocessor(
                 preprocessor_name, preprocessor_config
             )
@@ -149,10 +149,10 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
         rounded_instance = {k: round(v, 3) for k, v in instance.items()}
         if (
             request.model.extra_config["preprocessors"]
-            and request.model.extra_config["preprocessors"][0].name
+            and request.model.extra_config["preprocessors"][0]["name"]
             == "LabelEncoder"
         ):
-            labels = request.model.extra_config["preprocessors"][0].config[
+            labels = request.model.extra_config["preprocessors"][0]["config"][
                 "classes_"
             ]
             rounded_instance = {labels[k]: v for k, v in rounded_instance.items()}
