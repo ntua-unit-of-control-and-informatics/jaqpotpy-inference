@@ -13,7 +13,8 @@ from src.api.openapi import PredictionResponse
 from src.api.openapi.models.prediction_request import PredictionRequest
 from src.handlers.predict_sklearn import sklearn_post_handler
 from src.handlers.predict_pyg import graph_post_handler
-from fastapi.responses import JSONResponse
+
+from src.loggers.logger import logger
 from src.loggers.log_middleware import LogMiddleware
 
 app = FastAPI()
@@ -27,6 +28,7 @@ def health_check():
 
 @app.post("/predict/")
 def predict(req: PredictionRequest) -> PredictionResponse:
+    logger.info("Prediction request for model " + str(req.model.id))
     if req.model.type == "SKLEARN":
         return sklearn_post_handler(req)
     else:
