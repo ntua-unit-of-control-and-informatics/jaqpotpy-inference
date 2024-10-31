@@ -7,8 +7,15 @@ import numpy as np
 
 def sklearn_post_handler(request: PredictionRequest) -> PredictionResponse:
     model = model_decoder.decode(request.model.raw_model)
+    preprocessor = (
+        model_decoder.decode(request.model.raw_preprocessor)
+        if request.model.raw_preprocessor
+        else None
+    )
     data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
-    prediction, doa_predictions = predict_onnx(model, data_entry_all, request)
+    prediction, doa_predictions = predict_onnx(
+        model, preprocessor, data_entry_all, request
+    )
     task = request.model.task.lower()
     if task == "binary_classification" or task == "multiclass_classification":
         probabilities = predict_proba_onnx(model, data_entry_all, request)
