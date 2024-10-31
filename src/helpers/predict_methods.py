@@ -51,7 +51,7 @@ def calculate_doas(input_feed, request):
     return doas_results
 
 
-def predict_onnx(model, dataset: JaqpotpyDataset, request):
+def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
     """
     Perform prediction using an ONNX model.
     Parameters:
@@ -73,27 +73,36 @@ def predict_onnx(model, dataset: JaqpotpyDataset, request):
     - The request dictionary should contain the necessary configuration for preprocessors and DOAS.
     """
 
-    sess = InferenceSession(model.SerializeToString())
-    input_feed = {}
+    if preprocessor:
+        # prepare initial types for preprocessing
+        input_feed = {}
+        for independent_feature in model.graph.input:
+            np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
+                independent_feature.type.tensor_type.elem_type
+            )
+            if len(model.graph.input) == 1:
+                input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
+            else:
+                input_feed[independent_feature.name] = (
+                    dataset.X[independent_feature.name]
+                    .values.astype(np_dtype)
+                    .reshape(-1, 1)
+                )
+        # apply preprocessors
+        preprocessor_session = InferenceSession(preprocessor.SerializeToString())
+        input_feed_transformed = preprocessor_session.run(None, input_feed)[0]
+
+    doas_results = None
+    model_session = InferenceSession(model.SerializeToString())
     for independent_feature in model.graph.input:
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
 
-        if len(model.graph.input) == 1:
-            input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
-        else:
-            input_feed[independent_feature.name] = (
-                dataset.X[independent_feature.name]
-                .values.astype(np_dtype)
-                .reshape(-1, 1)
-            )
-    if request.model.doas:
-        doas_results = calculate_doas(input_feed, request)
-    else:
-        doas_results = None
-
-    onnx_prediction = sess.run(None, input_feed)[0]
+    input_feed_transformed = {
+        model_session.get_inputs()[0].name: input_feed_transformed.astype(np_dtype)
+    }
+    onnx_prediction = model_session.run(None, input_feed)[0]
 
     if request.model.extra_config["preprocessors"]:
         for i in reversed(range(len(request.model.extra_config["preprocessors"]))):
@@ -131,7 +140,7 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
           with class labels as keys and rounded probability values as values.
     """
 
-    sess = InferenceSession(model.SerializeToString())
+    model_session = InferenceSession(model.SerializeToString())
     input_feed = {}
     for independent_feature in model.graph.input:
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
@@ -145,7 +154,7 @@ def predict_proba_onnx(model, dataset: JaqpotpyDataset, request):
                 .values.astype(np_dtype)
                 .reshape(-1, 1)
             )
-    onnx_probs = sess.run(None, input_feed)
+    onnx_probs = model_session.run(None, input_feed)
     probs_list = []
     for instance in onnx_probs[1]:
         rounded_instance = {k: round(v, 3) for k, v in instance.items()}
