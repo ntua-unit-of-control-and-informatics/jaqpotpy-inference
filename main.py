@@ -28,7 +28,7 @@ def health_check():
 
 @app.post("/predict/")
 def predict(req: PredictionRequest) -> PredictionResponse:
-    logger.info("Prediction request for model " + req.model.id)
+    logger.info("Prediction request for model " + str(req.model.id))
     if req.model.type == "SKLEARN":
         return sklearn_post_handler(req)
     else:
