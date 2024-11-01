@@ -13,31 +13,26 @@ def sklearn_post_handler(request: PredictionRequest) -> PredictionResponse:
         else None
     )
     data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
-    prediction, doa_predictions = predict_onnx(
+    predicted_values, probabilities, doa_predictions = predict_onnx(
         model, preprocessor, data_entry_all, request
     )
-    task = request.model.task.lower()
-    if task == "binary_classification" or task == "multiclass_classification":
-        probabilities = predict_proba_onnx(model, data_entry_all, request)
-    else:
-        probabilities = [None for _ in range(len(prediction))]
 
     predictions = []
     for jaqpot_row_id in jaqpot_row_ids:
         if len(request.model.dependent_features) == 1:
-            prediction = prediction.reshape(-1, 1)
+            predicted_values = predicted_values.reshape(-1, 1)
         jaqpot_row_id = int(jaqpot_row_id)
         results = {
-            feature.key: int(prediction[jaqpot_row_id, i])
+            feature.key: int(predicted_values[jaqpot_row_id, i])
             if isinstance(
-                prediction[jaqpot_row_id, i],
+                predicted_values[jaqpot_row_id, i],
                 (np.int16, np.int32, np.int64, np.longlong),
             )
-            else float(prediction[jaqpot_row_id, i])
+            else float(predicted_values[jaqpot_row_id, i])
             if isinstance(
-                prediction[jaqpot_row_id, i], (np.float16, np.float32, np.float64)
+                predicted_values[jaqpot_row_id, i], (np.float16, np.float32, np.float64)
             )
-            else prediction[jaqpot_row_id, i]
+            else predicted_values[jaqpot_row_id, i]
             for i, feature in enumerate(request.model.dependent_features)
         }
         results["jaqpotMetadata"] = {
