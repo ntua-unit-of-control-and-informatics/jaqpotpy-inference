@@ -26,14 +26,14 @@ def calculate_doas(input_feed, request):
         for doa_data in request.model.doas:
             if doa_data.method == "LEVERAGE":
                 doa_method = Leverage()
-                doa_method.h_star = doa_data.data.hStar
+                doa_method.h_star = doa_data.data["hStar"]
                 doa_method.doa_matrix = doa_data.data.doaMatrix
             elif doa_data.method == "BOUNDING_BOX":
                 doa_method = BoundingBox()
-                doa_method.bounding_box = doa_data.data.boundingBox
+                doa_method.bounding_box = doa_data.data["boundingBox"]
             elif doa_data.method == "MEAN_VAR":
                 doa_method = MeanVar()
-                doa_method.bounds = doa_data.data.bounds
+                doa_method.bounds = doa_data.data["bounds"]
             doa_instance_prediction[doa_method.__name__] = doa_method.predict(
                 pd.DataFrame(data_instance.values.reshape(1, -1))
             )[0]
@@ -107,7 +107,9 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
             independent_feature.type.tensor_type.elem_type
         )
 
-    input_feed = {model_session.get_inputs()[0].name: input_feed.astype(np_dtype)}
+    input_feed = {
+        model_session.get_inputs()[0].name: input_feed["input"].astype(np_dtype)
+    }
     onnx_prediction = model_session.run(None, input_feed)[0]
 
     if request.model.extra_config["preprocessors"]:
