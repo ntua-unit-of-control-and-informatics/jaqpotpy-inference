@@ -74,34 +74,40 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
     """
 
     if preprocessor:
-        # prepare initial types for preprocessing
-        input_feed = {}
-        for independent_feature in model.graph.input:
-            np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
-                independent_feature.type.tensor_type.elem_type
-            )
-            if len(model.graph.input) == 1:
-                input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = (
-                    dataset.X[independent_feature.name]
-                    .values.astype(np_dtype)
-                    .reshape(-1, 1)
-                )
-        # apply preprocessors
-        preprocessor_session = InferenceSession(preprocessor.SerializeToString())
-        input_feed_transformed = preprocessor_session.run(None, input_feed)[0]
+        onnx_graph = preprocessor
+    else:
+        onnx_graph = model
 
-    doas_results = None
+    # prepare initial types for preprocessing
+    input_feed = {}
+    for independent_feature in onnx_graph.graph.input:
+        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
+            independent_feature.type.tensor_type.elem_type
+        )
+        if len(model.graph.input) == 1:
+            input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
+        else:
+            input_feed[independent_feature.name] = (
+                dataset.X[independent_feature.name]
+                .values.astype(np_dtype)
+                .reshape(-1, 1)
+            )
+        if preprocessor:
+            preprocessor_session = InferenceSession(preprocessor.SerializeToString())
+            input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
+
+    if request.model.doas:
+        doas_results = calculate_doas(input_feed, request)
+    else:
+        doas_results = None
+
     model_session = InferenceSession(model.SerializeToString())
     for independent_feature in model.graph.input:
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
 
-    input_feed_transformed = {
-        model_session.get_inputs()[0].name: input_feed_transformed.astype(np_dtype)
-    }
+    input_feed = {model_session.get_inputs()[0].name: input_feed.astype(np_dtype)}
     onnx_prediction = model_session.run(None, input_feed)[0]
 
     if request.model.extra_config["preprocessors"]:
