@@ -27,6 +27,7 @@ from src.api.openapi.models.dataset_csv import DatasetCSV
 from src.api.openapi.models.dataset_type import DatasetType
 from src.api.openapi.models.doa import Doa
 from src.api.openapi.models.doa_data import DoaData
+from src.api.openapi.models.doa_method import DoaMethod
 from src.api.openapi.models.error_code import ErrorCode
 from src.api.openapi.models.error_response import ErrorResponse
 from src.api.openapi.models.feature import Feature
@@ -70,6 +71,7 @@ from src.api.openapi.models.partially_update_model_feature_request import (
 from src.api.openapi.models.partially_update_model_request import (
     PartiallyUpdateModelRequest,
 )
+from src.api.openapi.models.prediction_doa import PredictionDoa
 from src.api.openapi.models.prediction_model import PredictionModel
 from src.api.openapi.models.prediction_request import PredictionRequest
 from src.api.openapi.models.prediction_response import PredictionResponse

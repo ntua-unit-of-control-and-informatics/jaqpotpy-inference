@@ -20,20 +20,19 @@ import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from src.api.openapi.models.doa_data import DoaData
 from src.api.openapi.models.doa_method import DoaMethod
 from typing import Optional, Set
 from typing_extensions import Self
 
 
-class Doa(BaseModel):
+class PredictionDoa(BaseModel):
     """
-    Doa
+    PredictionDoa
     """  # noqa: E501
 
     id: Optional[StrictInt] = None
     method: DoaMethod
-    data: DoaData
+    data: Dict[str, Any] = Field(description="The doa calculated data")
     created_at: Optional[datetime] = Field(
         default=None,
         description="The date and time when the feature was created.",
@@ -69,7 +68,7 @@ class Doa(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Doa from a JSON string"""
+        """Create an instance of PredictionDoa from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -89,14 +88,11 @@ class Doa(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of data
-        if self.data:
-            _dict["data"] = self.data.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Doa from a dict"""
+        """Create an instance of PredictionDoa from a dict"""
         if obj is None:
             return None
 
@@ -107,9 +103,7 @@ class Doa(BaseModel):
             {
                 "id": obj.get("id"),
                 "method": obj.get("method"),
-                "data": DoaData.from_dict(obj["data"])
-                if obj.get("data") is not None
-                else None,
+                "data": obj.get("data"),
                 "createdAt": obj.get("createdAt"),
                 "updatedAt": obj.get("updatedAt"),
             }
