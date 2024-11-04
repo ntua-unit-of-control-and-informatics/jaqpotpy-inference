@@ -1,7 +1,7 @@
 from ..api.openapi import PredictionResponse
 from ..api.openapi.models.prediction_request import PredictionRequest
 from ..helpers import model_decoder, json_to_predreq
-from ..helpers.predict_methods import predict_onnx, predict_proba_onnx
+from ..helpers.predict_methods import predict_onnx
 import numpy as np
 
 
