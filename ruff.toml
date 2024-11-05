@@ -1,3 +1,5 @@
 [lint]
 ignore = ["D100", "E722", "F401", "F403"]
 exclude = ["src/api/openapi/**"]
+[format]
+exclude = ["src/api/openapi/**"]
