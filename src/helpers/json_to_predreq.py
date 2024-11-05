@@ -20,10 +20,10 @@ def decode(request):
         if feature.feature_type != "SMILES"
     ]
     featurizers = []
-    if request.model.extra_config["featurizers"]:
-        for i in range(len(request.model.extra_config["featurizers"])):
-            featurizer_name = request.model.extra_config["featurizers"][i]["name"]
-            featurizer_config = request.model.extra_config["featurizers"][i]["config"]
+    if request.model.featurizers:
+        for i in range(len(request.model.featurizers)):
+            featurizer_name = request.model.featurizers[i]["name"]
+            featurizer_config = request.model.featurizers[i]["config"]
             featurizer = recreate_featurizer(featurizer_name, featurizer_config)
             featurizers.append(featurizer)
     else:

@@ -1,6 +1,6 @@
 import json
 import logging
-from logging import Formatter
+from logging import Formatter, RootLogger
 
 
 class JsonFormatter(Formatter):
@@ -18,7 +18,7 @@ class JsonFormatter(Formatter):
         return json.dumps(json_record)
 
 
-logger = logging.root
+logger: RootLogger = logging.root
 handler = logging.StreamHandler()
 handler.setFormatter(JsonFormatter())
 logger.handlers = [handler]
