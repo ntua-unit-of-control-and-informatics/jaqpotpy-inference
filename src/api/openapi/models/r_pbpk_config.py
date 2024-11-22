@@ -18,22 +18,17 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 
-class Library(BaseModel):
+class RPbpkConfig(BaseModel):
     """
-    Library
+    Configuration for the R PBPK models
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    name: StrictStr
-    version: StrictStr
-    created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
-    updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "version", "createdAt", "updatedAt"]
+    ode_solver: Optional[StrictStr] = Field(default=None, alias="odeSolver")
+    __properties: ClassVar[List[str]] = ["odeSolver"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -53,7 +48,7 @@ class Library(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Library from a JSON string"""
+        """Create an instance of RPbpkConfig from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -78,7 +73,7 @@ class Library(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Library from a dict"""
+        """Create an instance of RPbpkConfig from a dict"""
         if obj is None:
             return None
 
@@ -86,11 +81,7 @@ class Library(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name"),
-            "version": obj.get("version"),
-            "createdAt": obj.get("createdAt"),
-            "updatedAt": obj.get("updatedAt")
+            "odeSolver": obj.get("odeSolver")
         })
         return _obj
 
