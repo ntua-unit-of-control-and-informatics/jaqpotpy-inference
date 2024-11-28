@@ -1,11 +1,11 @@
-from ..api.openapi import PredictionResponse
-from ..api.openapi.models.prediction_request import PredictionRequest
+from jaqpotpy.api.openapi import PredictionRequest, PredictionResponse
+
 from ..helpers import model_decoder, json_to_predreq
 from ..helpers.predict_methods import predict_onnx
 import numpy as np
 
 
-def sklearn_post_handler(request: PredictionRequest) -> PredictionResponse:
+def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
     model = model_decoder.decode(request.model.raw_model)
     preprocessor = (
         model_decoder.decode(request.model.raw_preprocessor)

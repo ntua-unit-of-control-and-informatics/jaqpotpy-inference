@@ -8,11 +8,10 @@
 
 import uvicorn
 from fastapi import FastAPI
+from jaqpotpy.api.openapi import PredictionRequest, PredictionResponse, ModelType
 
-from src.api.openapi import PredictionResponse
-from src.api.openapi.models.prediction_request import PredictionRequest
-from src.handlers.predict_sklearn import sklearn_post_handler
-from src.handlers.predict_pyg import graph_post_handler
+from src.handlers.predict_sklearn_onnx import sklearn_onnx_post_handler
+from src.handlers.predict_torch import torch_post_handler
 
 from src.loggers.logger import logger
 from src.loggers.log_middleware import LogMiddleware
@@ -26,13 +25,21 @@ def health_check():
     return {"status": "UP"}
 
 
-@app.post("/predict/")
+@app.post("/predict")
 def predict(req: PredictionRequest) -> PredictionResponse:
     logger.info("Prediction request for model " + str(req.model.id))
-    if req.model.type == "SKLEARN":
-        return sklearn_post_handler(req)
-    else:
-        return graph_post_handler(req)
+
+    match req.model.type:
+        case ModelType.SKLEARN_ONNX:
+            return sklearn_onnx_post_handler(req)
+        case (
+            ModelType.TORCH_GEOMETRIC_ONNX,
+            ModelType.TORCHSCRIPT,
+            ModelType.TORCH_SEQUENCE_ONNX,
+        ):
+            return torch_post_handler(req)
+        case _:
+            raise Exception("Model type not supported")
 
 
 if __name__ == "__main__":
