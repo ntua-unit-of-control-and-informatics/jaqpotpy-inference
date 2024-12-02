@@ -33,9 +33,9 @@ def predict(req: PredictionRequest) -> PredictionResponse:
         case ModelType.SKLEARN_ONNX:
             return sklearn_onnx_post_handler(req)
         case (
-            ModelType.TORCH_GEOMETRIC_ONNX,
-            ModelType.TORCHSCRIPT,
-            ModelType.TORCH_SEQUENCE_ONNX,
+            ModelType.TORCH_GEOMETRIC_ONNX
+            | ModelType.TORCHSCRIPT
+            | ModelType.TORCH_SEQUENCE_ONNX
         ):
             return torch_post_handler(req)
         case _:
