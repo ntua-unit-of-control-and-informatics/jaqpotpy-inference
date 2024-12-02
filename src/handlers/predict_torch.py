@@ -4,13 +4,11 @@ import torch
 import io
 import numpy as np
 import torch.nn.functional as f
+from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionResponse
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
-from src.api.openapi import PredictionResponse
-from src.api.openapi.models.prediction_request import PredictionRequest
 
-
-def graph_post_handler(request: PredictionRequest) -> PredictionResponse:
+def torch_post_handler(request: PredictionRequest) -> PredictionResponse:
     feat_config = request.model.torch_config
     featurizer = _load_featurizer(feat_config)
     target_name = request.model.dependent_features[0].name
@@ -18,15 +16,15 @@ def graph_post_handler(request: PredictionRequest) -> PredictionResponse:
     user_input = request.dataset.input
     raw_model = request.model.raw_model
     predictions = []
-    if request.model.type == "TORCH_ONNX":
+    if request.model.type == ModelType.TORCH_GEOMETRIC_ONNX:
         for inp in user_input:
-            model_output = onnx_post_handler(
+            model_output = torch_geometric_onnx_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
             predictions.append(
                 check_model_task(model_task, target_name, model_output, inp)
             )
-    elif request.model.type == "TORCHSCRIPT":
+    elif request.model.type == ModelType.TORCHSCRIPT:
         for inp in user_input:
             model_output = torchscript_post_handler(
                 raw_model, featurizer.featurize(inp["SMILES"])
@@ -37,7 +35,7 @@ def graph_post_handler(request: PredictionRequest) -> PredictionResponse:
     return PredictionResponse(predictions=predictions)
 
 
-def onnx_post_handler(raw_model, data):
+def torch_geometric_onnx_post_handler(raw_model, data):
     onnx_model = base64.b64decode(raw_model)
     ort_session = onnxruntime.InferenceSession(onnx_model)
     ort_inputs = {
