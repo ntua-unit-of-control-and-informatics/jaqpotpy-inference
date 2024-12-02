@@ -5,13 +5,12 @@ import io
 import numpy as np
 import torch.nn.functional as f
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
-
-from src.api.openapi import PredictionResponse
-from src.api.openapi.models.prediction_request import PredictionRequest
+from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionResponse
+from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 from src.helpers.utils import to_numpy
 
 
-def sequence_post_handler(request: PredictionRequest) -> PredictionResponse:
+def torch_sequence_post_handler(request: PredictionRequest) -> PredictionResponse:
     feat_config = request.model.torch_config
     featurizer = _load_featurizer(feat_config)
     target_name = request.model.dependent_features[0].name
@@ -20,8 +19,9 @@ def sequence_post_handler(request: PredictionRequest) -> PredictionResponse:
     raw_model = request.model.raw_model
     predictions = []
     for inp in user_input:
+        print(featurizer.transform([inp["SMILES"]]))
         model_output = onnx_post_handler(
-            raw_model, featurizer.transform(list(inp["SMILES"]))
+            raw_model, featurizer.transform(featurizer.transform([inp["SMILES"]]))
         )
         predictions.append(check_model_task(model_task, target_name, model_output, inp))
     return PredictionResponse(predictions=predictions)
@@ -30,7 +30,7 @@ def sequence_post_handler(request: PredictionRequest) -> PredictionResponse:
 def onnx_post_handler(raw_model, data):
     onnx_model = base64.b64decode(raw_model)
     ort_session = onnxruntime.InferenceSession(onnx_model)
-    ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(input)}
+    ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(data)}
     ort_outs = torch.tensor(np.array(ort_session.run(None, ort_inputs)))
     return ort_outs
 

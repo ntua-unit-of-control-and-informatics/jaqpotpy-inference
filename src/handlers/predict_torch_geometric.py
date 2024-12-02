@@ -8,7 +8,7 @@ from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionRespons
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
 
-def torch_post_handler(request: PredictionRequest) -> PredictionResponse:
+def torch_geometric_post_handler(request: PredictionRequest) -> PredictionResponse:
     feat_config = request.model.torch_config
     featurizer = _load_featurizer(feat_config)
     target_name = request.model.dependent_features[0].name
