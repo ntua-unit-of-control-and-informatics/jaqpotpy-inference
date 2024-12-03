@@ -43,7 +43,7 @@ def calculate_doas(input_feed, request):
             elif doa_data.method == "MAHALANOBIS":
                 doa_method = Mahalanobis()
                 doa_method._mean_vector = doa_data.data["meanVector"]
-                doa_method._inv_cov_matrix = doa_data.data["covMatrix"]
+                doa_method._inv_cov_matrix = doa_data.data["invCovMatrix"]
                 doa_method._threshold = doa_data.data["threshold"]
             elif doa_data.method == "KERNEL_BASED":
                 doa_method = KernelBased()
