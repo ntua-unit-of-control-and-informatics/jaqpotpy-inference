@@ -2,6 +2,10 @@ fastapi==0.111.0
 pydantic==2.7.1
 uvicorn==0.29.0
 starlette~=0.37.2
+<<<<<<< HEAD
 jaqpotpy==6.18.3
+=======
+jaqpotpy==6.18.2
+>>>>>>> 428acf70b3b9a55cee8814c67b696b7d4d69f9c6
 pre-commit==4.0.1
 ruff==0.6.3
