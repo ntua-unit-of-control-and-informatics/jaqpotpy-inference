@@ -37,5 +37,5 @@ def decode(request):
         featurizer=featurizers,
     )
     if len(request.model.selected_features) > 0:
-        dataset.select_features(SelectionList=request.model.selected_features)
+        dataset.select_features(SelectColumns=request.model.selected_features)
     return dataset, jaqpot_row_ids
