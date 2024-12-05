@@ -33,7 +33,7 @@ def torch_regression(target_name, output, inp):
     return results
 
 
-def check_model_task(model_task, target_name, out, row_id):
+def generate_prediction_response(model_task, target_name, out, row_id):
     if model_task == ModelTask.BINARY_CLASSIFICATION:
         return torch_binary_classification(target_name, out, row_id)
     elif model_task == ModelTask.REGRESSION:

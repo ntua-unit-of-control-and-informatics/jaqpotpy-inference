@@ -3,7 +3,7 @@ import onnxruntime
 import torch
 import io
 import numpy as np
-from src.helpers.torch_utils import to_numpy, check_model_task
+from src.helpers.torch_utils import to_numpy, generate_prediction_response
 from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionResponse
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 from jaqpotpy.api.openapi.models.model_task import ModelTask
@@ -23,7 +23,7 @@ def torch_geometric_post_handler(request: PredictionRequest) -> PredictionRespon
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
             predictions.append(
-                check_model_task(model_task, target_name, model_output, inp)
+                generate_prediction_response(model_task, target_name, model_output, inp)
             )
     elif request.model.type == ModelType.TORCHSCRIPT:
         for inp in user_input:
@@ -31,7 +31,7 @@ def torch_geometric_post_handler(request: PredictionRequest) -> PredictionRespon
                 raw_model, featurizer.featurize(inp["SMILES"])
             )
             predictions.append(
-                check_model_task(model_task, target_name, model_output, inp)
+                generate_prediction_response(model_task, target_name, model_output, inp)
             )
     return PredictionResponse(predictions=predictions)
 
