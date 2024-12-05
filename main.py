@@ -9,10 +9,9 @@
 import uvicorn
 from fastapi import FastAPI
 from jaqpotpy.api.openapi import PredictionRequest, PredictionResponse, ModelType
-
 from src.handlers.predict_sklearn_onnx import sklearn_onnx_post_handler
-from src.handlers.predict_torch import torch_post_handler
-
+from src.handlers.predict_torch_geometric import torch_geometric_post_handler
+from src.handlers.predict_torch_sequence import torch_sequence_post_handler
 from src.loggers.logger import logger
 from src.loggers.log_middleware import LogMiddleware
 
@@ -32,12 +31,10 @@ def predict(req: PredictionRequest) -> PredictionResponse:
     match req.model.type:
         case ModelType.SKLEARN_ONNX:
             return sklearn_onnx_post_handler(req)
-        case (
-            ModelType.TORCH_GEOMETRIC_ONNX
-            | ModelType.TORCHSCRIPT
-            | ModelType.TORCH_SEQUENCE_ONNX
-        ):
-            return torch_post_handler(req)
+        case ModelType.TORCH_SEQUENCE_ONNX:
+            return torch_sequence_post_handler(req)
+        case ModelType.TORCH_GEOMETRIC_ONNX | ModelType.TORCHSCRIPT:
+            return torch_geometric_post_handler(req)
         case _:
             raise Exception("Model type not supported")
 
