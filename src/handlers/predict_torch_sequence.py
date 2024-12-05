@@ -4,10 +4,10 @@ import torch
 import io
 import numpy as np
 import torch.nn.functional as f
+from src.helpers.torch_utils import to_numpy, check_model_task
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
 from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionResponse
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
-from src.helpers.utils import to_numpy
 
 
 def torch_sequence_post_handler(request: PredictionRequest) -> PredictionResponse:
@@ -19,7 +19,6 @@ def torch_sequence_post_handler(request: PredictionRequest) -> PredictionRespons
     raw_model = request.model.raw_model
     predictions = []
     for inp in user_input:
-        print(featurizer.transform([inp["SMILES"]]))
         model_output = onnx_post_handler(
             raw_model, featurizer.transform(featurizer.transform([inp["SMILES"]]))
         )
@@ -39,39 +38,3 @@ def _load_featurizer(config):
     featurizer = SmilesVectorizer()
     featurizer.load_dict(config)
     return featurizer
-
-
-def sequence_regression(target_name, output, inp):
-    pred = [output.squeeze().tolist()]
-    results = {"jaqpotMetadata": {"jaqpotRowId": inp["jaqpotRowId"]}}
-    if "jaqpotRowLabel" in inp:
-        results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
-    results[target_name] = pred
-    return results
-
-
-def sequence_classification(target_name, output, inp):
-    proba = f.sigmoid(output).squeeze().tolist()
-    pred = int(proba > 0.5)
-    # UI Results
-    results = {
-        "jaqpotMetadata": {
-            "probabilities": [round((1 - proba), 3), round(proba, 3)],
-            "jaqpotRowId": inp["jaqpotRowId"],
-        }
-    }
-    if "jaqpotRowLabel" in inp:
-        results["jaqpotMetadata"]["jaqpotRowLabel"] = inp["jaqpotRowLabel"]
-    results[target_name] = pred
-    return results
-
-
-def check_model_task(model_task, target_name, out, row_id):
-    if model_task == "BINARY_CLASSIFICATION":
-        return sequence_classification(target_name, out, row_id)
-    elif model_task == "REGRESSION":
-        return sequence_regression(target_name, out, row_id)
-    else:
-        raise ValueError(
-            "Only BINARY_CLASSIFICATION and REGRESSION tasks are supported"
-        )

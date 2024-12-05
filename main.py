@@ -9,7 +9,6 @@
 import uvicorn
 from fastapi import FastAPI
 from jaqpotpy.api.openapi import PredictionRequest, PredictionResponse, ModelType
-
 from src.handlers.predict_sklearn_onnx import sklearn_onnx_post_handler
 from src.handlers.predict_torch_geometric import torch_geometric_post_handler
 from src.handlers.predict_torch_sequence import torch_sequence_post_handler
