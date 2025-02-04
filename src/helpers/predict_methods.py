@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import onnx
 from onnxruntime import InferenceSession
 from jaqpotpy.datasets import JaqpotpyDataset
@@ -152,6 +153,14 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
                 onnx_prediction[0] = preprocessor_recreated.inverse_transform(
                     onnx_prediction[0].reshape(-1, 1)
                 )
+                if (
+                    len(request.model.dependent_features) == 1
+                    and len(onnx_prediction) == 2
+                ):
+                    # GPR model that returns both predictions and std case
+                    onnx_prediction[1] = (
+                        onnx_prediction[1] * preprocessor_recreated.scale_
+                    )
             else:
                 onnx_prediction[0] = preprocessor_recreated.inverse_transform(
                     onnx_prediction[0]
