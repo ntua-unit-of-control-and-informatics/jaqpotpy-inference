@@ -18,23 +18,38 @@ def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
     )
 
     predictions = []
+    results = {}
+
     for jaqpot_row_id in jaqpot_row_ids:
-        if len(request.model.dependent_features) == 1:
+        if len(request.model.dependent_features) == 1 and predicted_values.ndim == 1:
             predicted_values = predicted_values.reshape(-1, 1)
         jaqpot_row_id = int(jaqpot_row_id)
-        results = {
-            feature.key: int(predicted_values[jaqpot_row_id, i])
-            if isinstance(
-                predicted_values[jaqpot_row_id, i],
-                (np.int16, np.int32, np.int64, np.longlong),
-            )
-            else float(predicted_values[jaqpot_row_id, i])
-            if isinstance(
-                predicted_values[jaqpot_row_id, i], (np.float16, np.float32, np.float64)
-            )
-            else predicted_values[jaqpot_row_id, i]
-            for i, feature in enumerate(request.model.dependent_features)
-        }
+
+        if predicted_values.ndim == 1:
+            results = {
+                feature.key: int(predicted_values[jaqpot_row_id, i])
+                if isinstance(
+                    predicted_values[jaqpot_row_id, i],
+                    (np.int16, np.int32, np.int64, np.longlong),
+                )
+                else float(predicted_values[jaqpot_row_id, i])
+                if isinstance(
+                    np.round(
+                        predicted_values[jaqpot_row_id, i],
+                        (np.float16, np.float32, np.float64),
+                        3,
+                    ),
+                )
+                else predicted_values[jaqpot_row_id, i]
+                for i, feature in enumerate(request.model.dependent_features)
+            }
+        elif len(request.model.dependent_features) == 1 and predicted_values.ndim > 1:
+            results = {
+                request.model.dependent_features[0].key: np.round(
+                    predicted_values[jaqpot_row_id, :], 3
+                ).tolist()
+            }
+
         results["jaqpotMetadata"] = {
             "doa": doa_predictions[jaqpot_row_id] if doa_predictions else None,
             "probabilities": probabilities[jaqpot_row_id],
