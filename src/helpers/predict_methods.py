@@ -168,7 +168,11 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
 
     if len(request.model.dependent_features) == 1:
         onnx_prediction[0] = onnx_prediction[0].flatten()
-    if len(request.model.dependent_features) == 1 and len(onnx_prediction) == 2:
+    if (
+        len(request.model.dependent_features) == 1
+        and len(onnx_prediction) == 2
+        and request.model.task.lower() == "regression"
+    ):
         onnx_prediction[0] = np.array(onnx_prediction).T
 
     # Probabilities estimation

@@ -25,20 +25,17 @@ def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
             predicted_values = predicted_values.reshape(-1, 1)
         jaqpot_row_id = int(jaqpot_row_id)
 
-        if predicted_values.ndim == 1:
+        if predicted_values.ndim == 1 or request.model.task not in ["regression"]:
             results = {
                 feature.key: int(predicted_values[jaqpot_row_id, i])
                 if isinstance(
                     predicted_values[jaqpot_row_id, i],
                     (np.int16, np.int32, np.int64, np.longlong),
                 )
-                else float(predicted_values[jaqpot_row_id, i])
+                else float(predicted_values[jaqpot_row_id, i], 3)
                 if isinstance(
-                    np.round(
-                        predicted_values[jaqpot_row_id, i],
-                        (np.float16, np.float32, np.float64),
-                        3,
-                    ),
+                    predicted_values[jaqpot_row_id, i],
+                    (np.float16, np.float32, np.float64),
                 )
                 else predicted_values[jaqpot_row_id, i]
                 for i, feature in enumerate(request.model.dependent_features)
