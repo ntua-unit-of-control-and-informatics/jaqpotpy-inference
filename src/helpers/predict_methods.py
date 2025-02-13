@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import onnx
 from onnxruntime import InferenceSession
 from jaqpotpy.datasets import JaqpotpyDataset
@@ -113,11 +114,14 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
         if len(onnx_graph.graph.input) == 1:
             input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
         else:
-            input_feed[independent_feature.name] = (
-                dataset.X[independent_feature.name]
-                .values.astype(np_dtype)
-                .reshape(-1, 1)
-            )
+            feature_values = dataset.X[independent_feature.name].values
+            if "bool" in str(np_dtype):
+                feature_values = feature_values == "TRUE"
+                input_feed[independent_feature.name] = feature_values.reshape(-1, 1)
+            else:
+                input_feed[independent_feature.name] = feature_values.astype(
+                    np_dtype
+                ).reshape(-1, 1)
     if preprocessor:
         preprocessor_session = InferenceSession(preprocessor.SerializeToString())
         input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
@@ -152,12 +156,27 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
                 onnx_prediction[0] = preprocessor_recreated.inverse_transform(
                     onnx_prediction[0].reshape(-1, 1)
                 )
-            onnx_prediction[0] = preprocessor_recreated.inverse_transform(
-                onnx_prediction[0]
-            )
+                if (
+                    len(request.model.dependent_features) == 1
+                    and len(onnx_prediction) == 2
+                ):
+                    # GPR model that returns both predictions and std case
+                    onnx_prediction[1] = (
+                        onnx_prediction[1] * preprocessor_recreated.scale_
+                    )
+            else:
+                onnx_prediction[0] = preprocessor_recreated.inverse_transform(
+                    onnx_prediction[0]
+                )
 
     if len(request.model.dependent_features) == 1:
         onnx_prediction[0] = onnx_prediction[0].flatten()
+    if (
+        len(request.model.dependent_features) == 1
+        and len(onnx_prediction) == 2
+        and request.model.task.lower() == "regression"
+    ):
+        onnx_prediction[0] = np.array(onnx_prediction).T
 
     # Probabilities estimation
     probs_list = []
