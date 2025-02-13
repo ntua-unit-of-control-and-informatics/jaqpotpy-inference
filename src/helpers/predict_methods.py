@@ -69,7 +69,10 @@ def calculate_doas(input_feed, request):
                 len(in_doa_values) / 2
             )
         else:
-            doa_instance_prediction["majorityVoting"] = None
+            # Access the inDoa value that corresponds to True or False
+            doa_instance_prediction["majorityVoting"] = list(
+                doa_instance_prediction.values()
+            )[0]["inDoa"]
         doas_results.append(doa_instance_prediction)
     return doas_results
 
