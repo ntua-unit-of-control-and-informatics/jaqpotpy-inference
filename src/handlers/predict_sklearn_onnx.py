@@ -1,4 +1,4 @@
-from jaqpotpy.api.openapi import PredictionRequest, PredictionResponse
+from jaqpot_api_client import PredictionRequest, PredictionResponse
 
 from ..helpers import model_decoder, json_to_predreq
 from ..helpers.predict_methods import predict_onnx
