@@ -4,9 +4,9 @@ import torch
 import io
 import numpy as np
 from src.helpers.torch_utils import to_numpy, generate_prediction_response
-from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionResponse
+from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
-from jaqpotpy.api.openapi.models.model_task import ModelTask
+from jaqpot_api_client.models.model_task import ModelTask
 
 
 def torch_geometric_post_handler(request: PredictionRequest) -> PredictionResponse:
