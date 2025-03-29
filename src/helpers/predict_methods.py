@@ -152,9 +152,10 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
                 onnx_prediction[0] = preprocessor_recreated.inverse_transform(
                     onnx_prediction[0].reshape(-1, 1)
                 )
-            onnx_prediction[0] = preprocessor_recreated.inverse_transform(
-                onnx_prediction[0]
-            )
+            else:
+                onnx_prediction[0] = preprocessor_recreated.inverse_transform(
+                    onnx_prediction[0]
+                )
 
     if len(request.model.dependent_features) == 1:
         onnx_prediction[0] = onnx_prediction[0].flatten()

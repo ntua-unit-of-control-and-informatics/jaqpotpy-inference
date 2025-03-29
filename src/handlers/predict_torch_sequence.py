@@ -6,7 +6,7 @@ import numpy as np
 import torch.nn.functional as f
 from src.helpers.torch_utils import to_numpy, generate_prediction_response
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
-from jaqpotpy.api.openapi import ModelType, PredictionRequest, PredictionResponse
+from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 
 
