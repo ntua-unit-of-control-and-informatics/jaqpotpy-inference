@@ -167,7 +167,7 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
         "multiclass_classification",
     ]:
         for instance in onnx_prediction[1]:
-            if not isinstance(instance, dict):
+            if not isinstance(instance, dict):  # support vector classifier case
                 instance = {i: float(p) for i, p in enumerate(instance)}
             rounded_instance = {k: round(v, 3) for k, v in instance.items()}
             if (
