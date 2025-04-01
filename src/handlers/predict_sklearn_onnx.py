@@ -25,7 +25,7 @@ def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
             predicted_values = predicted_values.reshape(-1, 1)
         jaqpot_row_id = int(jaqpot_row_id)
 
-        if predicted_values.ndim == 1 or request.model.task not in ["REGRESSION"]:
+        if predicted_values.ndim == 1 or request.model.task != ModelTask.REGRESSION:
             results = {
                 feature.key: int(predicted_values[jaqpot_row_id, i])
                 if isinstance(
