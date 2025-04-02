@@ -1,5 +1,5 @@
 import torch.nn.functional as f
-from jaqpotpy.api.openapi.models.model_task import ModelTask
+from jaqpot_api_client.models.model_task import ModelTask
 
 
 def to_numpy(tensor):
