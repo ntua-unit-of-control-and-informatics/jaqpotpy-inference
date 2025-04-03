@@ -1,14 +1,16 @@
 from jaqpot_api_client import PredictionRequest, PredictionResponse
 
-from ..helpers import model_decoder, json_to_predreq
+from ..helpers import base64_utils, json_to_predreq
 from ..helpers.predict_methods import predict_onnx
 import numpy as np
+import onnx
 
 
 def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
-    model = model_decoder.decode(request.model.raw_model)
+    model = onnx.load_from_string(base64_utils.decode(request.model.raw_model))
+
     preprocessor = (
-        model_decoder.decode(request.model.raw_preprocessor)
+        onnx.load_from_string(base64_utils.decode(request.model.raw_preprocessor))
         if request.model.raw_preprocessor
         else None
     )
