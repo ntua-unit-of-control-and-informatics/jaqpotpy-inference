@@ -8,7 +8,7 @@ from PIL import Image
 from torchvision.transforms.functional import pil_to_tensor
 from jaqpot_api_client import PredictionRequest, PredictionResponse, FeatureType
 
-from src.helpers import json_to_predreq
+from ..helpers.dataset_utils import build_dataset_from_request
 from src.helpers.predict_methods import predict_onnx
 from src.helpers.torch_utils import to_numpy
 
@@ -34,7 +34,7 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
             img_array = img_array.reshape(1, *img_array.shape)  # [1, H, W, C]
             row[f.key] = img_array
 
-    data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
+    data_entry_all, jaqpot_row_ids = build_dataset_from_request(request)
     predicted_values, probabilities, doa_predictions = predict_onnx(
         model, preprocessor, data_entry_all, request
     )
@@ -57,27 +57,6 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
                 results[feature.key] = int(value)
             elif isinstance(value, (np.floating, float)):
                 results[feature.key] = float(value)
-
-            # Arrays (e.g., images or vectors)
-            elif isinstance(value, np.ndarray):
-                if value.ndim in [2, 3] and value.dtype in [
-                    np.uint8,
-                    np.float32,
-                    np.float64,
-                ]:
-                    try:
-                        # Assume image if 2D/3D and values are in image range
-                        pil_img = Image.fromarray(value.astype(np.uint8))
-                        buf = io.BytesIO()
-                        pil_img.save(buf, format="PNG")
-                        results[feature.key] = base64.b64encode(buf.getvalue()).decode(
-                            "utf-8"
-                        )
-                    except Exception:
-                        # If not image-compatible, fall back to list
-                        results[feature.key] = value.tolist()
-                else:
-                    results[feature.key] = value.tolist()
 
             # Anything else (e.g., string, bool, object)
             else:

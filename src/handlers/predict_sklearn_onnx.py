@@ -4,7 +4,7 @@ import numpy as np
 import onnx
 from jaqpot_api_client import PredictionRequest, PredictionResponse
 
-from ..helpers import json_to_predreq
+from ..helpers.dataset_utils import build_dataset_from_request
 from ..helpers.predict_methods import predict_onnx
 
 
@@ -16,7 +16,9 @@ def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
         if request.model.raw_preprocessor
         else None
     )
-    data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
+    data_entry_all, jaqpot_row_ids = (
+        build_dataset_from_request.build_dataset_from_request(request)
+    )
     predicted_values, probabilities, doa_predictions = predict_onnx(
         model, preprocessor, data_entry_all, request
     )

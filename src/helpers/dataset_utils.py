@@ -1,9 +1,11 @@
 import pandas as pd
+from jaqpot_api_client import PredictionRequest
+
 from src.helpers.recreate_featurizer import recreate_featurizer
 from jaqpotpy.datasets import JaqpotpyDataset
 
 
-def decode(request):
+def build_dataset_from_request(request: PredictionRequest):
     df = pd.DataFrame(request.dataset.input)
     jaqpot_row_ids = []
     for i in range(len(df)):
