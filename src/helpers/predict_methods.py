@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import onnx
 from onnxruntime import InferenceSession
 from jaqpotpy.datasets import JaqpotpyDataset
@@ -102,19 +103,33 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
         onnx_graph = model
 
     # prepare initial types for preprocessing
+    # prepare initial types for preprocessing
     input_feed = {}
     for independent_feature in onnx_graph.graph.input:
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
         if len(onnx_graph.graph.input) == 1:
-            input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
+            # Handle object dtype (e.g., arrays inside cells)
+
+            if dataset.X.dtypes[0] == "object":
+                input_feed[independent_feature.name] = np.stack(
+                    [squeeze_first_dim(x) for x in dataset.X.iloc[:, 0].to_list()]
+                ).astype(np_dtype)
+            else:
+                input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
         else:
-            input_feed[independent_feature.name] = (
-                dataset.X[independent_feature.name]
-                .values.astype(np_dtype)
-                .reshape(-1, 1)
-            )
+            if dataset.X[independent_feature.name].dtype == "object":
+                input_feed[independent_feature.name] = np.stack(
+                    [squeeze_first_dim(x) for x in dataset.X.iloc[:, 0].to_list()]
+                ).astype(np_dtype)
+            else:
+                input_feed[independent_feature.name] = (
+                    dataset.X[independent_feature.name]
+                    .values.astype(np_dtype)
+                    .reshape(-1, 1)
+                )
+
     if preprocessor:
         preprocessor_session = InferenceSession(preprocessor.SerializeToString())
         input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
@@ -176,3 +191,7 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
         probs_list = [None for _ in range(len(onnx_prediction[0]))]
 
     return onnx_prediction[0], probs_list, doas_results
+
+
+def squeeze_first_dim(arr):
+    return arr[0] if arr.ndim == 4 and arr.shape[0] == 1 else arr

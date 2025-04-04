@@ -1,16 +1,18 @@
-from jaqpot_api_client import PredictionRequest, PredictionResponse
+from base64 import b64decode
 
-from ..helpers import base64_utils, json_to_predreq
-from ..helpers.predict_methods import predict_onnx
 import numpy as np
 import onnx
+from jaqpot_api_client import PredictionRequest, PredictionResponse
+
+from ..helpers import json_to_predreq
+from ..helpers.predict_methods import predict_onnx
 
 
 def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
-    model = onnx.load_from_string(base64_utils.decode(request.model.raw_model))
+    model = onnx.load_from_string(b64decode(request.model.raw_model))
 
     preprocessor = (
-        onnx.load_from_string(base64_utils.decode(request.model.raw_preprocessor))
+        onnx.load_from_string(b64decode(request.model.raw_preprocessor))
         if request.model.raw_preprocessor
         else None
     )
