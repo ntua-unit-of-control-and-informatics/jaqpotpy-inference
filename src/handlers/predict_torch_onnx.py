@@ -2,15 +2,12 @@ import base64
 import io
 import numpy as np
 import onnx
-import onnxruntime
 import torch
 from PIL import Image
-from torchvision.transforms.functional import pil_to_tensor
 from jaqpot_api_client import PredictionRequest, PredictionResponse, FeatureType
 
 from ..helpers.dataset_utils import build_dataset_from_request
-from src.helpers.predict_methods import predict_onnx
-from src.helpers.torch_utils import to_numpy
+from src.helpers.predict_methods import predict_torch_onnx
 
 
 def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
@@ -35,7 +32,7 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
             row[f.key] = img_array
 
     data_entry_all, jaqpot_row_ids = build_dataset_from_request(request)
-    predicted_values, probabilities, doa_predictions = predict_onnx(
+    predicted_values, probabilities, doa_predictions = predict_torch_onnx(
         model, preprocessor, data_entry_all, request
     )
 

@@ -75,7 +75,7 @@ def calculate_doas(input_feed, request):
     return doas_results
 
 
-def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
+def predict_sklearn_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
     """
     Perform prediction using an ONNX model.
     Parameters:
@@ -103,33 +103,19 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
         onnx_graph = model
 
     # prepare initial types for preprocessing
-    # prepare initial types for preprocessing
     input_feed = {}
     for independent_feature in onnx_graph.graph.input:
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
             independent_feature.type.tensor_type.elem_type
         )
         if len(onnx_graph.graph.input) == 1:
-            # Handle object dtype (e.g., arrays inside cells)
-
-            if dataset.X.dtypes[0] == "object":
-                input_feed[independent_feature.name] = np.stack(
-                    [squeeze_first_dim(x) for x in dataset.X.iloc[:, 0].to_list()]
-                ).astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
+            input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
         else:
-            if dataset.X[independent_feature.name].dtype == "object":
-                input_feed[independent_feature.name] = np.stack(
-                    [squeeze_first_dim(x) for x in dataset.X.iloc[:, 0].to_list()]
-                ).astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = (
-                    dataset.X[independent_feature.name]
-                    .values.astype(np_dtype)
-                    .reshape(-1, 1)
-                )
-
+            input_feed[independent_feature.name] = (
+                dataset.X[independent_feature.name]
+                .values.astype(np_dtype)
+                .reshape(-1, 1)
+            )
     if preprocessor:
         preprocessor_session = InferenceSession(preprocessor.SerializeToString())
         input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
@@ -191,6 +177,79 @@ def predict_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
         probs_list = [None for _ in range(len(onnx_prediction[0]))]
 
     return onnx_prediction[0], probs_list, doas_results
+
+
+def predict_torch_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
+    """
+    Perform prediction using an ONNX model.
+    Parameters:
+    model (onnx.ModelProto): The ONNX model to be used for prediction.
+    dataset (JaqpotpyDataset): The dataset containing the input features.
+    request (dict): A dictionary containing additional configuration for the prediction,
+                    including model-specific settings and preprocessors.
+    Returns:
+    tuple: A tuple containing the ONNX model predictions and DOA results (if applicable).
+    The function performs the following steps:
+    1. Initializes an ONNX InferenceSession with the serialized model.
+    2. Prepares the input feed by converting dataset features to the appropriate numpy data types.
+    3. If doas (Domain of Applicability) is requested, it calculates the DOAS results.
+    4. Runs the ONNX model to get predictions.
+    5. Applies any specified preprocessors in reverse order to the predictions.
+    6. Flattens the predictions if there is only one dependent feature.
+    Note:
+    - The function assumes that the dataset features and model inputs are aligned.
+    - The request dictionary should contain the necessary configuration for preprocessors and DOAS.
+    """
+
+    if preprocessor:
+        onnx_graph = preprocessor
+    else:
+        onnx_graph = model
+
+    # prepare initial types for preprocessing
+    # prepare initial types for preprocessing
+    input_feed = {}
+    for independent_feature in onnx_graph.graph.input:
+        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
+            independent_feature.type.tensor_type.elem_type
+        )
+        if len(onnx_graph.graph.input) == 1:
+            # Handle object dtype (e.g., arrays inside cells)
+
+            if dataset.X.dtypes[0] == "object":
+                input_feed[independent_feature.name] = np.stack(
+                    [squeeze_first_dim(x) for x in dataset.X.iloc[:, 0].to_list()]
+                ).astype(np_dtype)
+            else:
+                input_feed[independent_feature.name] = dataset.X.values.astype(np_dtype)
+        else:
+            if dataset.X[independent_feature.name].dtype == "object":
+                input_feed[independent_feature.name] = np.stack(
+                    [squeeze_first_dim(x) for x in dataset.X.iloc[:, 0].to_list()]
+                ).astype(np_dtype)
+            else:
+                input_feed[independent_feature.name] = (
+                    dataset.X[independent_feature.name]
+                    .values.astype(np_dtype)
+                    .reshape(-1, 1)
+                )
+
+    if preprocessor:
+        preprocessor_session = InferenceSession(preprocessor.SerializeToString())
+        input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
+
+    model_session = InferenceSession(model.SerializeToString())
+    for independent_feature in model.graph.input:
+        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
+            independent_feature.type.tensor_type.elem_type
+        )
+
+    input_feed = {
+        model_session.get_inputs()[0].name: input_feed["input"].astype(np_dtype)
+    }
+    onnx_prediction = model_session.run(None, input_feed)
+
+    return onnx_prediction[0]
 
 
 def squeeze_first_dim(arr):
