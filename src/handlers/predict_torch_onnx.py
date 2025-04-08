@@ -32,35 +32,27 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
             row[f.key] = img_array
 
     data_entry_all, jaqpot_row_ids = build_dataset_from_request(request)
-    predicted_values, probabilities, doa_predictions = predict_torch_onnx(
-        model, preprocessor, data_entry_all, request
-    )
+    predicted_values = predict_torch_onnx(model, preprocessor, data_entry_all, request)
 
     predictions = []
     for jaqpot_row_id in jaqpot_row_ids:
-        if len(request.model.dependent_features) == 1:
-            predicted_values = predicted_values.reshape(-1, 1)
         jaqpot_row_id = int(jaqpot_row_id)
         results = {}
         for i, feature in enumerate(request.model.dependent_features):
             value = predicted_values[jaqpot_row_id, i]
 
-            # Handle torch.Tensor
-            if isinstance(value, torch.Tensor):
-                value = value.detach().cpu().numpy()
-
-            # Scalars
-            if isinstance(value, (np.integer, int)):
+            if isinstance(value, np.ndarray):
+                results[feature.key] = value.tolist()
+            elif isinstance(value, torch.Tensor):
+                results[feature.key] = value.detach().cpu().numpy()
+            elif isinstance(value, (np.integer, int)):
                 results[feature.key] = int(value)
             elif isinstance(value, (np.floating, float)):
                 results[feature.key] = float(value)
-
             # Anything else (e.g., string, bool, object)
             else:
                 results[feature.key] = value
         results["jaqpotMetadata"] = {
-            "doa": doa_predictions[jaqpot_row_id] if doa_predictions else None,
-            "probabilities": probabilities[jaqpot_row_id],
             "jaqpotRowId": jaqpot_row_id,
         }
         predictions.append(results)
