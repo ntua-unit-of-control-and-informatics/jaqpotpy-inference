@@ -71,7 +71,10 @@ def calculate_doas(input_feed, request):
                 len(in_doa_values) / 2
             )
         else:
-            doa_instance_prediction["majorityVoting"] = None
+            # Access the inDoa value that corresponds to True or False
+            doa_instance_prediction["majorityVoting"] = list(
+                doa_instance_prediction.values()
+            )[0]["inDoa"]
         doas_results.append(doa_instance_prediction)
     return doas_results
 
@@ -151,9 +154,10 @@ def predict_sklearn_onnx(model, preprocessor, dataset: JaqpotTabularDataset, req
                 onnx_prediction[0] = preprocessor_recreated.inverse_transform(
                     onnx_prediction[0].reshape(-1, 1)
                 )
-            onnx_prediction[0] = preprocessor_recreated.inverse_transform(
-                onnx_prediction[0]
-            )
+            else:
+                onnx_prediction[0] = preprocessor_recreated.inverse_transform(
+                    onnx_prediction[0]
+                )
 
     if len(request.model.dependent_features) == 1:
         onnx_prediction[0] = onnx_prediction[0].flatten()
@@ -165,6 +169,8 @@ def predict_sklearn_onnx(model, preprocessor, dataset: JaqpotTabularDataset, req
         "multiclass_classification",
     ]:
         for instance in onnx_prediction[1]:
+            if not isinstance(instance, dict):  # support vector classifier case
+                instance = {i: float(p) for i, p in enumerate(instance)}
             rounded_instance = {k: round(v, 3) for k, v in instance.items()}
             if (
                 request.model.preprocessors

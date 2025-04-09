@@ -1,6 +1,6 @@
 # This is for my local path
 # from pathlib import Path
-# import sys
+# import sysjaqpot_api_client
 
 # path_root = Path(__file__).parents[1]
 # print(path_root)
