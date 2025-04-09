@@ -1,16 +1,18 @@
 import base64
-import io
 import numpy as np
 import onnx
 import torch
-from PIL import Image
 from jaqpot_api_client import PredictionRequest, PredictionResponse, FeatureType
 
 from ..helpers.dataset_utils import (
-    build_tabular_dataset_from_request,
     build_tensor_dataset_from_request,
 )
 from src.helpers.predict_methods import predict_torch_onnx
+from ..helpers.image_utils import validate_and_decode_image, tensor_to_base64_img
+
+
+def convert_tensor_to_base64_image(tensor: np.ndarray) -> str:
+    return tensor_to_base64_img(torch.tensor(tensor))
 
 
 def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
@@ -42,10 +44,16 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
         jaqpot_row_id = int(jaqpot_row_id)
         results = {}
         for i, feature in enumerate(request.model.dependent_features):
-            value = predicted_values[jaqpot_row_id, i]
+            value = predicted_values[jaqpot_row_id]
 
             if isinstance(value, np.ndarray):
-                results[feature.key] = value.tolist()
+                if (
+                    request.dataset.result_types[feature.key]
+                    and feature.feature_type == FeatureType.IMAGE
+                ):
+                    results[feature.key] = convert_tensor_to_base64_image(value)
+                else:
+                    results[feature.key] = value.tolist()
             elif isinstance(value, torch.Tensor):
                 results[feature.key] = value.detach().cpu().numpy()
             elif isinstance(value, (np.integer, int)):
@@ -60,45 +68,3 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
         }
         predictions.append(results)
     return PredictionResponse(predictions=predictions)
-
-    # model_session = onnxruntime.InferenceSession(raw_model)
-    # preprocessor_session = (
-    #     onnxruntime.InferenceSession(base64.b64decode(raw_preprocessor))
-    #     if has_preprocessor else None
-    # )
-    #
-    # predictions = []
-    # for i, row in enumerate(user_input):
-    #     input_row = row.copy()
-    #     for j, feature in enumerate(independent_features):
-    #         if feature.feature_type == FeatureType.IMAGE:
-    #             img = validate_and_decode_image(input_row[feature.key])
-    #             img_array = np.array(img, dtype=np.uint8)  # [H, W, C]
-    #             img_array = img_array.reshape(1, *img_array.shape)  # [1, H, W, C]
-    #             input_row[feature.key] = img_array
-    #
-    #     del input_row['jaqpotRowId']
-    #     if has_preprocessor:
-    #         processed = preprocessor_session.run(None, input_row)
-    #     else:
-    #         processed = input_row
-    #
-    #     ort_inputs = processed
-    #     ort_outs = model_session.run(None, ort_inputs)
-    #
-    #     predictions.append({
-    #         "jaqpotRowId": str(i),
-    #     })
-
-    return PredictionResponse(predictions=predictions)
-
-
-def validate_and_decode_image(b64_string):
-    try:
-        image_bytes = base64.b64decode(b64_string)
-        img = Image.open(io.BytesIO(image_bytes))
-        img.verify()  # Validate format, throws if not valid image
-        img = Image.open(io.BytesIO(image_bytes))  # Reopen image to use
-        return img
-    except Exception as e:
-        raise ValueError("Invalid image input") from e

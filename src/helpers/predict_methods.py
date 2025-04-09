@@ -207,7 +207,6 @@ def predict_torch_onnx(model, preprocessor, dataset: JaqpotTensorDataset, reques
         onnx_graph = model
 
     # prepare initial types for preprocessing
-    # prepare initial types for preprocessing
     input_feed = {}
     for independent_feature in onnx_graph.graph.input:
         np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
