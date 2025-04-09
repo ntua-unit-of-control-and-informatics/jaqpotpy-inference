@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import onnx
+from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
 from onnxruntime import InferenceSession
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from src.helpers.recreate_preprocessor import recreate_preprocessor
 from jaqpotpy.doa import (
     Leverage,
@@ -75,12 +76,12 @@ def calculate_doas(input_feed, request):
     return doas_results
 
 
-def predict_sklearn_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
+def predict_sklearn_onnx(model, preprocessor, dataset: JaqpotTabularDataset, request):
     """
     Perform prediction using an ONNX model.
     Parameters:
     model (onnx.ModelProto): The ONNX model to be used for prediction.
-    dataset (JaqpotpyDataset): The dataset containing the input features.
+    dataset (JaqpotTabularDataset): The dataset containing the input features.
     request (dict): A dictionary containing additional configuration for the prediction,
                     including model-specific settings and preprocessors.
     Returns:
@@ -179,12 +180,12 @@ def predict_sklearn_onnx(model, preprocessor, dataset: JaqpotpyDataset, request)
     return onnx_prediction[0], probs_list, doas_results
 
 
-def predict_torch_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
+def predict_torch_onnx(model, preprocessor, dataset: JaqpotTensorDataset, request):
     """
     Perform prediction using an ONNX model.
     Parameters:
     model (onnx.ModelProto): The ONNX model to be used for prediction.
-    dataset (JaqpotpyDataset): The dataset containing the input features.
+    dataset (JaqpotTabularDataset): The dataset containing the input features.
     request (dict): A dictionary containing additional configuration for the prediction,
                     including model-specific settings and preprocessors.
     Returns:
@@ -193,8 +194,7 @@ def predict_torch_onnx(model, preprocessor, dataset: JaqpotpyDataset, request):
     1. Initializes an ONNX InferenceSession with the serialized model.
     2. Prepares the input feed by converting dataset features to the appropriate numpy data types.
     3. If doas (Domain of Applicability) is requested, it calculates the DOAS results.
-    4. Runs the ONNX model to get predictions.
-    5. Applies any specified preprocessors in reverse order to the predictions.
+    4. Runs the ONNX model to get predictions. 5. Applies any specified preprocessors in reverse order to the predictions.
     6. Flattens the predictions if there is only one dependent feature.
     Note:
     - The function assumes that the dataset features and model inputs are aligned.

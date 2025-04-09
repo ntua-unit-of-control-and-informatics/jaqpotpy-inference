@@ -6,7 +6,10 @@ import torch
 from PIL import Image
 from jaqpot_api_client import PredictionRequest, PredictionResponse, FeatureType
 
-from ..helpers.dataset_utils import build_dataset_from_request
+from ..helpers.dataset_utils import (
+    build_tabular_dataset_from_request,
+    build_tensor_dataset_from_request,
+)
 from src.helpers.predict_methods import predict_torch_onnx
 
 
@@ -31,7 +34,7 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
             img_array = img_array.reshape(1, *img_array.shape)  # [1, H, W, C]
             row[f.key] = img_array
 
-    data_entry_all, jaqpot_row_ids = build_dataset_from_request(request)
+    data_entry_all, jaqpot_row_ids = build_tensor_dataset_from_request(request)
     predicted_values = predict_torch_onnx(model, preprocessor, data_entry_all, request)
 
     predictions = []
