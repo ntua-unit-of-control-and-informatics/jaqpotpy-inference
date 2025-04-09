@@ -16,9 +16,7 @@ def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
         if request.model.raw_preprocessor
         else None
     )
-    data_entry_all, jaqpot_row_ids = (
-        build_tabular_dataset_from_request.build_dataset_from_request(request)
-    )
+    data_entry_all, jaqpot_row_ids = build_tabular_dataset_from_request(request)
     predicted_values, probabilities, doa_predictions = predict_sklearn_onnx(
         model, preprocessor, data_entry_all, request
     )
