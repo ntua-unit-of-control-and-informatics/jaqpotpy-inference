@@ -1,19 +1,23 @@
+from base64 import b64decode
+
+import numpy as np
+import onnx
 from jaqpot_api_client import PredictionRequest, PredictionResponse
 
-from ..helpers import model_decoder, json_to_predreq
-from ..helpers.predict_methods import predict_onnx
-import numpy as np
+from ..helpers.dataset_utils import build_tabular_dataset_from_request
+from ..helpers.predict_methods import predict_sklearn_onnx
 
 
 def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
-    model = model_decoder.decode(request.model.raw_model)
+    model = onnx.load_from_string(b64decode(request.model.raw_model))
+
     preprocessor = (
-        model_decoder.decode(request.model.raw_preprocessor)
+        onnx.load_from_string(b64decode(request.model.raw_preprocessor))
         if request.model.raw_preprocessor
         else None
     )
-    data_entry_all, jaqpot_row_ids = json_to_predreq.decode(request)
-    predicted_values, probabilities, doa_predictions = predict_onnx(
+    data_entry_all, jaqpot_row_ids = build_tabular_dataset_from_request(request)
+    predicted_values, probabilities, doa_predictions = predict_sklearn_onnx(
         model, preprocessor, data_entry_all, request
     )
 

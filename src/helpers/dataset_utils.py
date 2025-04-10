@@ -1,9 +1,12 @@
 import pandas as pd
+from jaqpot_api_client import PredictionRequest
+from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
+
 from src.helpers.recreate_featurizer import recreate_featurizer
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 
 
-def decode(request):
+def build_tabular_dataset_from_request(request: PredictionRequest):
     df = pd.DataFrame(request.dataset.input)
     jaqpot_row_ids = []
     for i in range(len(df)):
@@ -29,7 +32,7 @@ def decode(request):
     else:
         featurizers = None
 
-    dataset = JaqpotpyDataset(
+    dataset = JaqpotTabularDataset(
         df=df,
         smiles_cols=smiles_cols,
         x_cols=x_cols,
@@ -38,4 +41,20 @@ def decode(request):
     )
     if len(request.model.selected_features) > 0:
         dataset.select_features(SelectColumns=request.model.selected_features)
+    return dataset, jaqpot_row_ids
+
+
+def build_tensor_dataset_from_request(request: PredictionRequest):
+    df = pd.DataFrame(request.dataset.input)
+    jaqpot_row_ids = []
+    for i in range(len(df)):
+        jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
+    independent_features = request.model.independent_features
+    x_cols = [feature.key for feature in independent_features]
+
+    dataset = JaqpotTensorDataset(
+        df=df,
+        x_cols=x_cols,
+        task=request.model.task.lower(),
+    )
     return dataset, jaqpot_row_ids

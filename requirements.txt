@@ -2,7 +2,8 @@ fastapi==0.111.0
 pydantic==2.7.1
 uvicorn==0.29.0
 starlette~=0.37.2
-jaqpotpy==6.20.3
+jaqpotpy==6.21.2
+jaqpot-api-client==6.41.0
 pre-commit==4.0.1
 ruff==0.6.3
-jaqpot-api-client==6.40.7
+pillow==11.1.0
