@@ -7,3 +7,4 @@ jaqpot-api-client==6.41.0
 pre-commit==4.0.1
 ruff==0.6.3
 pillow==11.1.0
+torchvision==0.21.0

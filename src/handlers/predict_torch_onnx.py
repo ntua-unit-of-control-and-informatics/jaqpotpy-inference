@@ -1,11 +1,12 @@
 import base64
+
 import numpy as np
 import onnx
 import torch
 from jaqpot_api_client import PredictionRequest, PredictionResponse, FeatureType
 
-from ..helpers.dataset_utils import build_tensor_dataset_from_request
 from src.helpers.predict_methods import predict_torch_onnx
+from ..helpers.dataset_utils import build_tensor_dataset_from_request
 from ..helpers.image_utils import validate_and_decode_image, tensor_to_base64_img
 
 
@@ -70,7 +71,8 @@ def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
                 tensor = torch.tensor(value) if isinstance(value, np.ndarray) else value
 
                 if (
-                    request.dataset.result_types.get(feature.key)
+                    request.dataset.result_types is not None
+                    and request.dataset.result_types.get(feature.key)
                     and feature.feature_type == FeatureType.IMAGE
                 ):
                     if tensor.ndim == 4:  # remove batch dim if present
