@@ -30,8 +30,10 @@ def convert_tensor_to_base64_image(image_array: torch.Tensor) -> str:
 
 def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
     if request.model.raw_model is None:
-        raw_model = s3_client.download_file(request.model.id)
-        model = onnx.load(raw_model)
+        file_obj, error = s3_client.download_file(request.model.id)
+        if file_obj is None:
+            raise Exception(f"Failed to download model: {error}")
+        model = onnx.load(file_obj)
     else:
         raw_model = base64.b64decode(request.model.raw_model)
         model = onnx.load_from_string(raw_model)
