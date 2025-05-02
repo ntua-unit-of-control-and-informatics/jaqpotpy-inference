@@ -4,6 +4,7 @@ from botocore.exceptions import ClientError, EndpointConnectionError
 from dotenv import load_dotenv
 import logging
 import os
+from io import BytesIO
 
 from src.config.config import settings
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
-class S3Client:
+class ModelS3Client:
     def __init__(self):
         try:
             # Use default credentials provider which will automatically use instance profile in AWS
@@ -77,17 +78,26 @@ class S3Client:
             logger.error(error_msg)
             return False, error_msg
 
-    def download_file(self, model_id: str, local_path: str) -> Tuple[bool, str]:
+    def download_file(self, model_id: str) -> Tuple[Optional[BytesIO], str]:
         """
-        Download a file from S3 using model_id as the key
+        Download a file from S3 into memory using model_id as the key
         :param model_id: Model ID used as the S3 key
-        :param local_path: Local path where the file will be saved
-        :return: Tuple of (success boolean, error message if any)
+        :return: Tuple of (BytesIO object containing the file data or None, error message if any)
         """
         try:
-            self.s3_client.download_file(self.bucket_name, model_id, local_path)
-            logger.info(f"Successfully downloaded file for model {model_id}")
-            return True, ""
+            # Create a BytesIO object to store the file in memory
+            file_obj = BytesIO()
+
+            # Download the file directly into memory
+            self.s3_client.download_fileobj(self.bucket_name, model_id, file_obj)
+
+            # Reset the file pointer to the beginning
+            file_obj.seek(0)
+
+            logger.info(
+                f"Successfully downloaded file for model {model_id} into memory"
+            )
+            return file_obj, ""
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "404":
@@ -95,11 +105,11 @@ class S3Client:
             else:
                 error_msg = f"Error downloading file from S3: {e}"
             logger.error(error_msg)
-            return False, error_msg
+            return None, error_msg
         except Exception as e:
             error_msg = f"Unexpected error downloading file: {e}"
             logger.error(error_msg)
-            return False, error_msg
+            return None, error_msg
 
     def get_file_url(
         self, model_id: str, expires_in: int = 3600
