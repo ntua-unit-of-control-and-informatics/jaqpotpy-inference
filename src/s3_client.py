@@ -20,7 +20,6 @@ class S3Client:
             # Use default credentials provider which will automatically use instance profile in AWS
             self.s3_client = boto3.client("s3")
             self.bucket_name = settings.models_s3_bucket_name
-            print(settings.models_s3_bucket_name)
             # Test connection on initialization
             self._test_connection()
         except Exception as e:
