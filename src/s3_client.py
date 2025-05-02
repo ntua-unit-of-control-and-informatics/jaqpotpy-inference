@@ -3,6 +3,7 @@ import boto3
 from botocore.exceptions import ClientError, EndpointConnectionError
 from dotenv import load_dotenv
 import logging
+import os
 
 from src.config.config import settings
 
@@ -28,19 +29,22 @@ class S3Client:
 
     def _test_connection(self) -> bool:
         """
-        Test the S3 connection by attempting to list objects in the bucket
+        Test the S3 connection by attempting to access a test object in the bucket
         :return: True if connection successful, False otherwise
         """
         try:
-            self.s3_client.head_bucket(Bucket=self.bucket_name)
-            logger.info("Successfully connected to S3 bucket")
+            # Try to get metadata of a test object
+            # We use a test object that should exist in the bucket
+            test_object_key = "2095"
+            self.s3_client.head_object(Bucket=self.bucket_name, Key=test_object_key)
+            logger.info("Successfully connected to S3 bucket and accessed test object")
             return True
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "404":
-                logger.error(f"Bucket {self.bucket_name} not found")
+                logger.error(f"Test object not found in bucket {self.bucket_name}")
             elif error_code == "403":
-                logger.error("Access denied to S3 bucket. Check IAM role permissions.")
+                logger.error("Access denied to S3 object. Check IAM role permissions.")
             else:
                 logger.error(f"Error connecting to S3: {e}")
             return False
