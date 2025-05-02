@@ -15,11 +15,10 @@ from src.handlers.predict_torch_geometric import torch_geometric_post_handler
 from src.handlers.predict_torch_sequence import torch_sequence_post_handler
 from src.loggers.logger import logger
 from src.loggers.log_middleware import LogMiddleware
-from src.s3_client import S3Client
+from src.s3_client import ModelS3Client
 
 app = FastAPI()
 app.add_middleware(LogMiddleware)
-s3_client = S3Client()
 
 
 @app.get("/")
