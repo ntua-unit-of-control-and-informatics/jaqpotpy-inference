@@ -13,6 +13,7 @@ from jaqpotpy.doa import (
     KernelBased,
     CityBlock,
 )
+import gc
 
 
 def calculate_doas(input_feed, request):
@@ -253,6 +254,10 @@ def predict_torch_onnx(model, preprocessor, dataset: JaqpotTensorDataset, reques
         model_session.get_inputs()[0].name: input_feed["input"].astype(np_dtype)
     }
     onnx_prediction = model_session.run(None, input_feed)
+
+    del model
+    del model_session
+    gc.collect()  # Trigger garbage collection to free up memory
 
     return onnx_prediction[0]
 
