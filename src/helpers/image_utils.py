@@ -9,9 +9,9 @@ import torchvision.transforms as T
 def validate_and_decode_image(b64_string: str) -> ImageFile:
     try:
         image_bytes = base64.b64decode(b64_string)
-        img = Image.open(io.BytesIO(image_bytes))
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         img.verify()  # Validate format, throws if not valid image
-        img = Image.open(io.BytesIO(image_bytes))  # Reopen image to use
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")  # Reopen image to use
         return img
     except Exception as e:
         raise ValueError("Invalid image input") from e
@@ -35,7 +35,7 @@ def tensor_to_base64_img(tensor: torch.Tensor) -> str:
     buffer.seek(0)
 
     try:
-        validated = Image.open(buffer)
+        validated = Image.open(buffer).convert("RGB")
         validated.verify()  # Raises error if corrupt
     except (UnidentifiedImageError, OSError) as e:
         raise ValueError("Generated image is not valid") from e
