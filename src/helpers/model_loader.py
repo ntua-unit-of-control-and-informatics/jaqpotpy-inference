@@ -19,3 +19,13 @@ def retrieve_onnx_model_from_request(request: PredictionRequest):
         raw_model = base64.b64decode(request.model.raw_model)
         model = onnx.load_from_string(raw_model)
     return model
+
+
+def retrieve_raw_model_from_request(request: PredictionRequest):
+    if request.model.raw_model is None:
+        file_obj, error = models_s3_client.download_file(str(request.model.id))
+        if file_obj is None:
+            raise Exception(f"Failed to download model: {error}")
+        return file_obj
+    else:
+        return base64.b64decode(request.model.raw_model)

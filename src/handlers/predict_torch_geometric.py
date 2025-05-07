@@ -3,6 +3,8 @@ import onnxruntime
 import torch
 import io
 import numpy as np
+
+from src.helpers.model_loader import retrieve_raw_model_from_request
 from src.helpers.torch_utils import to_numpy, generate_prediction_response
 from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
@@ -15,7 +17,7 @@ def torch_geometric_post_handler(request: PredictionRequest) -> PredictionRespon
     target_name = request.model.dependent_features[0].name
     model_task = request.model.task
     user_input = request.dataset.input
-    raw_model = request.model.raw_model
+    raw_model = retrieve_raw_model_from_request(request)
     predictions = []
     if request.model.type == ModelType.TORCH_GEOMETRIC_ONNX:
         for inp in user_input:

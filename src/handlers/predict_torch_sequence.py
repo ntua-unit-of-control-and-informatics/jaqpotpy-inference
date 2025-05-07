@@ -4,6 +4,8 @@ import torch
 import io
 import numpy as np
 import torch.nn.functional as f
+
+from src.helpers.model_loader import retrieve_raw_model_from_request
 from src.helpers.torch_utils import to_numpy, generate_prediction_response
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
 from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
@@ -16,7 +18,7 @@ def torch_sequence_post_handler(request: PredictionRequest) -> PredictionRespons
     target_name = request.model.dependent_features[0].name
     model_task = request.model.task
     user_input = request.dataset.input
-    raw_model = request.model.raw_model
+    raw_model = retrieve_raw_model_from_request(request)
     predictions = []
     for inp in user_input:
         model_output = onnx_post_handler(

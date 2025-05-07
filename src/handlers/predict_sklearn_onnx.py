@@ -6,7 +6,7 @@ from jaqpot_api_client import PredictionRequest, PredictionResponse
 
 from ..helpers.dataset_utils import build_tabular_dataset_from_request
 from ..helpers.predict_methods import predict_sklearn_onnx
-from ..helpers.model_utils import retrieve_onnx_model_from_request
+from ..helpers.model_loader import retrieve_onnx_model_from_request
 
 
 def sklearn_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:

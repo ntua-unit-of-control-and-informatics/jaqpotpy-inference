@@ -9,7 +9,7 @@ from src.helpers.predict_methods import predict_torch_onnx
 from ..helpers.dataset_utils import build_tensor_dataset_from_request
 from ..helpers.image_utils import validate_and_decode_image, tensor_to_base64_img
 from src.helpers.s3_client import S3Client
-from ..helpers.model_utils import retrieve_onnx_model_from_request
+from ..helpers.model_loader import retrieve_onnx_model_from_request
 
 
 def convert_tensor_to_base64_image(image_array: torch.Tensor) -> str:
