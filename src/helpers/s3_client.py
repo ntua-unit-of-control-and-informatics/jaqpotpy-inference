@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
-class ModelS3Client:
-    def __init__(self):
+class S3Client:
+    def __init__(self, bucket_name: str):
         try:
             # Use default credentials provider which will automatically use instance profile in AWS
             self.s3_client = boto3.client("s3")
-            self.bucket_name = settings.models_s3_bucket_name
+            self.bucket_name = bucket_name
             # Test connection on initialization
             self._test_connection()
         except Exception as e:

@@ -8,10 +8,8 @@ from jaqpot_api_client import PredictionRequest, PredictionResponse, FeatureType
 from src.helpers.predict_methods import predict_torch_onnx
 from ..helpers.dataset_utils import build_tensor_dataset_from_request
 from ..helpers.image_utils import validate_and_decode_image, tensor_to_base64_img
-from ..s3_client import ModelS3Client
-
-
-s3_client = ModelS3Client()
+from src.helpers.s3_client import S3Client
+from ..helpers.model_utils import retrieve_onnx_model_from_request
 
 
 def convert_tensor_to_base64_image(image_array: torch.Tensor) -> str:
@@ -29,14 +27,7 @@ def convert_tensor_to_base64_image(image_array: torch.Tensor) -> str:
 
 
 def torch_onnx_post_handler(request: PredictionRequest) -> PredictionResponse:
-    if request.model.raw_model is None:
-        file_obj, error = s3_client.download_file(str(request.model.id))
-        if file_obj is None:
-            raise Exception(f"Failed to download model: {error}")
-        model = onnx.load(file_obj)
-    else:
-        raw_model = base64.b64decode(request.model.raw_model)
-        model = onnx.load_from_string(raw_model)
+    model = retrieve_onnx_model_from_request(request)
 
     preprocessor = (
         onnx.load_from_string(base64.b64decode(request.model.raw_preprocessor))
