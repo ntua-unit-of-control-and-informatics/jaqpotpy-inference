@@ -38,8 +38,7 @@ def torch_geometric_post_handler(request: PredictionRequest) -> PredictionRespon
     return PredictionResponse(predictions=predictions)
 
 
-def torch_geometric_onnx_post_handler(raw_model, data):
-    onnx_model = base64.b64decode(raw_model)
+def torch_geometric_onnx_post_handler(onnx_model, data):
     ort_session = onnxruntime.InferenceSession(onnx_model)
     ort_inputs = {
         ort_session.get_inputs()[0].name: to_numpy(data.x),
@@ -52,8 +51,7 @@ def torch_geometric_onnx_post_handler(raw_model, data):
     return ort_outs
 
 
-def torchscript_post_handler(raw_model, data):
-    torchscript_model = base64.b64decode(raw_model)
+def torchscript_post_handler(torchscript_model, data):
     model_buffer = io.BytesIO(torchscript_model)
     model_buffer.seek(0)
     torchscript_model = torch.jit.load(model_buffer)
