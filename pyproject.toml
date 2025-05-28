@@ -1,0 +1,30 @@
+[project]
+name = "jaqpotpy-inference"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "UPCI NTUA",email = "upci.ntua@gmail.com"}
+]
+license = {text = "GNU GENERAL PUBLIC LICENSE"}
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "fastapi (==0.111.0)",
+    "pydantic (==2.7.1)",
+    "uvicorn (==0.29.0)",
+    "starlette (>=0.37.2,<0.38.0)",
+    "jaqpotpy (==6.21.2)",
+    "jaqpot-api-client (==6.43.2)",
+    "pre-commit (==4.0.1)",
+    "ruff (==0.6.3)",
+    "pillow (==11.1.0)",
+    "torchvision (==0.18.0)",
+    "boto3 (==1.34.69)",
+    "python-dotenv (==1.0.1)",
+    "pydantic-settings (==2.9.1)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
