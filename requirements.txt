@@ -251,7 +251,7 @@ pyyaml==6.0.2
     # via pre-commit
 rdkit==2025.3.2
     # via jaqpotpy
-requests==2.32.3
+requests==2.32.4
     # via
     #   jaqpotpy
     #   python-keycloak
