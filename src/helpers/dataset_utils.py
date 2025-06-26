@@ -36,7 +36,7 @@ def build_tabular_dataset_from_request(request: PredictionRequest):
         df=df,
         smiles_cols=smiles_cols,
         x_cols=x_cols,
-        task=request.model.task.lower(),
+        task=request.model.task,
         featurizer=featurizers,
     )
     if len(request.model.selected_features) > 0:
@@ -55,6 +55,6 @@ def build_tensor_dataset_from_request(request: PredictionRequest):
     dataset = JaqpotTensorDataset(
         df=df,
         x_cols=x_cols,
-        task=request.model.task.lower(),
+        task=request.model.task,
     )
     return dataset, jaqpot_row_ids
