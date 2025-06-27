@@ -1,22 +1,33 @@
-from src.handlers.predict_sklearn_onnx import sklearn_onnx_post_handler
-from src.handlers.predict_torch_onnx import torch_onnx_post_handler
-from src.handlers.predict_torch_geometric import torch_geometric_post_handler
-from src.handlers.predict_torch_sequence import torch_sequence_post_handler
 from src.loggers.logger import logger
+from src.config.config import settings
+from src.helpers.s3_client import S3Client
 from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
+from jaqpotpy.inference.service import PredictionService
+
+# Initialize S3 client for model downloads
+models_s3_client = S3Client(bucket_name=settings.models_s3_bucket_name)
+
+# Global prediction service instance using jaqpotpy shared logic
+prediction_service = PredictionService(local_mode=False, s3_client=models_s3_client)
 
 
 def run_prediction(req: PredictionRequest) -> PredictionResponse:
-    logger.info(f"Prediction request for model {req.model.id}")
+    """
+    Simplified prediction service using jaqpotpy shared logic.
 
-    match req.model.type:
-        case ModelType.SKLEARN_ONNX:
-            return sklearn_onnx_post_handler(req)
-        case ModelType.TORCH_ONNX:
-            return torch_onnx_post_handler(req)
-        case ModelType.TORCH_SEQUENCE_ONNX:
-            return torch_sequence_post_handler(req)
-        case ModelType.TORCH_GEOMETRIC_ONNX | ModelType.TORCHSCRIPT:
-            return torch_geometric_post_handler(req)
-        case _:
-            raise ValueError("Model type not supported")
+    This function now delegates all prediction logic to the unified
+    PredictionService in jaqpotpy, ensuring consistency between
+    local and production inference.
+    """
+    logger.info(
+        f"Prediction request for model {req.model.id} using shared jaqpotpy logic"
+    )
+
+    try:
+        # Use the unified prediction service
+        response = prediction_service.predict(req)
+        logger.info(f"Prediction completed successfully for model {req.model.id}")
+        return response
+    except Exception as e:
+        logger.error(f"Prediction failed for model {req.model.id}: {str(e)}")
+        raise
