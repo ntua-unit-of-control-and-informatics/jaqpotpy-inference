@@ -6,8 +6,6 @@ jaqpotpy
 jaqpot-api-client
 pre-commit
 ruff
-pillow
-torchvision
 boto3
 python-dotenv
 pydantic-settings
