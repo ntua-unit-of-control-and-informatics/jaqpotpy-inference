@@ -6,7 +6,6 @@ from jaqpotpy.offline.offline_model_data import OfflineModelData
 from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
 from src.loggers.logger import logger
 from src.config.config import Settings
-from src.helpers.dataset_utils import build_tabular_dataset_from_request
 
 
 def _download_model_from_s3(model_id: str, model_type: ModelType) -> bytes:
@@ -48,7 +47,10 @@ def _convert_request_to_model_data(req: PredictionRequest) -> OfflineModelData:
 
     # Create OfflineModelData
     return OfflineModelData(
-        onnx_bytes=onnx_bytes, preprocessor=preprocessor, model_metadata=req.model
+        model_id=req.model.id,
+        onnx_bytes=onnx_bytes,
+        preprocessor=preprocessor,
+        model_metadata=req.model,
     )
 
 
@@ -58,11 +60,8 @@ def run_prediction(req: PredictionRequest) -> PredictionResponse:
     # Convert request to model data
     model_data = _convert_request_to_model_data(req)
 
-    # Build dataset from request
-    dataset, jaqpot_row_ids = build_tabular_dataset_from_request(req)
-
     # Use jaqpotpy unified prediction service
     prediction_service = PredictionService()
-    response = prediction_service.predict(model_data, dataset, req.model.type.value)
+    response = prediction_service.predict(model_data, req.dataset, req.model.type.value)
 
     return response
