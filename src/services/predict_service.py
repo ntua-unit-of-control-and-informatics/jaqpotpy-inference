@@ -13,16 +13,10 @@ def _download_model_from_s3(model_id: str, model_type: ModelType) -> bytes:
     settings = Settings()
     s3_client = boto3.client("s3")
 
-    # Determine the file extension based on model type
-    if model_type == ModelType.TORCHSCRIPT:
-        file_extension = ".pt"
-    else:
-        file_extension = ".onnx"
-
-    key = f"{model_id}/model{file_extension}"
-
     try:
-        response = s3_client.get_object(Bucket=settings.models_s3_bucket_name, Key=key)
+        response = s3_client.get_object(
+            Bucket=settings.models_s3_bucket_name, Key=model_id
+        )
         return response["Body"].read()
     except Exception as e:
         logger.error(f"Failed to download model {model_id} from S3: {e}")
