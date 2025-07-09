@@ -15,7 +15,7 @@ def _download_model_from_s3(model_id: str, model_type: ModelType) -> bytes:
 
     try:
         response = s3_client.get_object(
-            Bucket=settings.models_s3_bucket_name, Key=model_id
+            Bucket=settings.models_s3_bucket_name, Key=str(model_id)
         )
         return response["Body"].read()
     except Exception as e:
