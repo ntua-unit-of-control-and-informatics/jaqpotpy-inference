@@ -45,7 +45,7 @@ def _convert_request_to_model_data(req: PredictionRequest) -> OfflineModelData:
         model_bytes=onnx_bytes,
         preprocessor=preprocessor,
         model_metadata=req.model,
-        doas=req.doas,
+        doas=req.model.doas,
     )
 
 
