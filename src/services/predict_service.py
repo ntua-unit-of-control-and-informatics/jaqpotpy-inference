@@ -27,24 +27,23 @@ def _convert_request_to_model_data(req: PredictionRequest) -> OfflineModelData:
     """Convert PredictionRequest to OfflineModelData"""
     # Get model bytes - either from request or download from S3
     if req.model.raw_model:
-        onnx_bytes = b64decode(req.model.raw_model)
+        model_bytes = b64decode(req.model.raw_model)
     else:
         logger.info(f"Raw model is null for model {req.model.id}, downloading from S3")
-        onnx_bytes = _download_model_from_s3(req.model.id, req.model.type)
+        model_bytes = _download_model_from_s3(req.model.id, req.model.type)
 
-    # Get preprocessor if available
-    preprocessor = None
+    # Get preprocessor_bytes if available
+    preprocessor_bytes = None
     if req.model.raw_preprocessor:
-        import onnx
-
-        preprocessor = onnx.load_from_string(b64decode(req.model.raw_preprocessor))
+        preprocessor_bytes = b64decode(req.model.raw_preprocessor)
 
     # Create OfflineModelData
     return OfflineModelData(
         model_id=req.model.id,
-        onnx_bytes=onnx_bytes,
-        preprocessor=preprocessor,
+        model_bytes=model_bytes,
+        preprocessor=preprocessor_bytes,
         model_metadata=req.model,
+        doas=req.model.doas,
     )
 
 

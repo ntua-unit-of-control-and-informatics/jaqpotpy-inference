@@ -96,7 +96,7 @@ jaqpot-api-client==6.49.1
     #   jaqpotpy
 jaqpot-python-sdk==6.1.0
     # via jaqpotpy
-jaqpotpy==7.0.0.dev9
+jaqpotpy==7.0.1
     # via -r requirements.in
 jinja2==3.1.6
     # via
@@ -195,7 +195,7 @@ packaging==25.0
     #   onnxruntime
 pandas==2.2.3
     # via jaqpotpy
-pillow==11.2.1
+pillow==11.3.0
     # via
     #   -r requirements.in
     #   rdkit
