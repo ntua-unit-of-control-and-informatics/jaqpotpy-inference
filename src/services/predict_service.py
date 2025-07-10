@@ -42,9 +42,10 @@ def _convert_request_to_model_data(req: PredictionRequest) -> OfflineModelData:
     # Create OfflineModelData
     return OfflineModelData(
         model_id=req.model.id,
-        onnx_bytes=onnx_bytes,
+        model_bytes=onnx_bytes,
         preprocessor=preprocessor,
         model_metadata=req.model,
+        doas=req.doas,
     )
 
 
