@@ -11,3 +11,4 @@ torchvision
 boto3
 python-dotenv
 pydantic-settings
+mordred
